@@ -1,0 +1,51 @@
+---
+import ThemeToggle from "./ThemeToggle.astro";
+
+const navLinks = [
+  { href: "#hero", label: "Home" },
+  { href: "#experience", label: "Experiences" },
+  { href: "#blog", label: "Blog" },
+  { href: "#contact", label: "Contact" },
+];
+---
+
+<header
+  id="site-header"
+  class="sticky top-0 z-10 mx-auto grid max-w-page grid-cols-[minmax(0,1fr)_auto] items-center gap-8 bg-bg px-9 py-5 max-tablet:gap-4 max-tablet:px-5 max-tablet:py-3.5 max-phone:px-4 max-phone:py-3 max-phone-sm:gap-3"
+>
+  <nav
+    aria-label="Main"
+    class="flex flex-wrap items-center gap-[26px] text-[13px] phone:max-tablet:text-[12px] max-tablet:gap-[18px] max-phone:gap-4 max-phone-sm:flex-nowrap max-phone-sm:gap-3.5 max-phone-sm:text-[12px]"
+  >
+    {navLinks.map(({ href, label }) => <a href={href}>{label}</a>)}
+  </nav>
+  <div
+    class="flex items-center gap-5 max-tablet:gap-3.5 max-tablet:whitespace-nowrap"
+  >
+    <ThemeToggle />
+    <a
+      href="#contact"
+      class="border-b border-line pb-0.5 text-[13px] max-phone-sm:text-[12px]"
+    >
+      Book A Call ↗
+    </a>
+  </div>
+</header>
+
+<script>
+  /* The hero's min-height and the anchor scroll offset both depend on the
+     header's real (content-driven) height. The observer fires once on
+     observe() — before first paint — so no eager measurement is needed. */
+  const header = document.getElementById("site-header");
+  if (header) {
+    new ResizeObserver((entries) => {
+      const size = entries[0]?.borderBoxSize[0];
+      if (size) {
+        document.documentElement.style.setProperty(
+          "--headerH",
+          `${size.blockSize}px`,
+        );
+      }
+    }).observe(header);
+  }
+</script>
