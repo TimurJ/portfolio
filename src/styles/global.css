@@ -8,6 +8,12 @@
 /* Tailwind dark: utilities follow the data-theme toggle, not the OS setting */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+/* Fallback for Header's measured height (see the ResizeObserver in
+   Header.astro, which owns this value) — not a design token. */
+:root {
+  --headerH: 58px;
+}
+
 :root {
   --bg: #ffffff;
   --ink: #1c1c1c;
@@ -46,11 +52,37 @@
   --font-sans: var(--font-archivo);
 }
 
+/* Layout constants from the design: the responsive tiers (used as
+   max-tablet:/max-phone:/max-phone-sm: variants and via @variant in scoped
+   styles) and the page container width (max-w-page). Static values, so they
+   live in a plain @theme block — media queries can't read CSS variables. */
+@theme {
+  --breakpoint-tablet: 900px;
+  --breakpoint-phone: 700px;
+  --breakpoint-phone-sm: 460px;
+  --container-page: 1600px;
+}
+
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: var(--headerH);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
   body {
     background: var(--bg);
     color: var(--ink);
-    font-family: var(--font-archivo);
+  }
+  a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--accent-text);
   }
   ::selection {
     background: var(--accent);
@@ -59,5 +91,16 @@
   :focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
+  }
+  /* Theme-flip fade. .theme-switching exists only for the duration of a
+     toggle click (see ThemeToggle.astro), so hovers, focus rings, and the
+     initial paint stay instant. */
+  html.theme-switching body,
+  html.theme-switching body * {
+    transition:
+      background-color 260ms ease,
+      color 260ms ease,
+      border-color 260ms ease,
+      outline-color 260ms ease;
   }
 }

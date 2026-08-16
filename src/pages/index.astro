@@ -1,20 +1,15 @@
 ---
-import { Font } from "astro:assets";
-
-import "../styles/global.css";
+import Header from "../components/Header.astro";
+import Hero from "../components/Hero.astro";
+import Base from "../layouts/Base.astro";
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="generator" content={Astro.generator} />
-    <Font cssVariable="--font-archivo" preload />
-    <title>Astro</title>
-  </head>
-  <body>
-    <h1>Astro</h1>
-  </body>
-</html>
+<Base
+  title="Timur Jalilov, Senior Frontend Engineer"
+  description="Senior Frontend Engineer in London building the frontends of real-time trading platforms — currently leading the team behind an energy-commodities trading terminal at Onyx Capital Group."
+>
+  <Header />
+  <main>
+    <Hero />
+  </main>
+</Base>

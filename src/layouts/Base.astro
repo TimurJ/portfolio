@@ -1,0 +1,44 @@
+---
+import { Font } from "astro:assets";
+
+import { THEME_ATTRIBUTE, THEME_STORAGE_KEY } from "../lib/theme";
+
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="generator" content={Astro.generator} />
+    <Font cssVariable="--font-archivo" preload={[{ weight: 400 }]} />
+    <script is:inline define:vars={{ THEME_STORAGE_KEY, THEME_ATTRIBUTE }}>
+      /* Must run before first paint so a stored "dark" choice never flashes
+         light — hence inline (define:vars implies is:inline, which is the
+         requirement here, not a drawback). */
+      try {
+        if (localStorage.getItem(THEME_STORAGE_KEY) === "dark") {
+          document.documentElement.setAttribute(THEME_ATTRIBUTE, "dark");
+        }
+      } catch {
+        /* no storage access — stay on the light default */
+      }
+    </script>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

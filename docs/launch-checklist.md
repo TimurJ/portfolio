@@ -2,16 +2,25 @@
 
 Items deliberately deferred from the post-scaffold audit (2026-08-16), with the trigger for doing each. Nothing here is forgotten — it's waiting on the page build or the production domain.
 
-## When the production domain is decided
+## Production domain
 
-- **Set `site` in `astro.config.mjs`** (e.g. `site: "https://example.com"`). It drives canonical URLs, Open Graph URLs, and sitemap/RSS entries via `Astro.site`. Deliberately unset for now: a wrong host (such as a temporary workers.dev URL) baked into canonical links is worse than none.
+Decided: **https://timurjalilov.com** (registered at GoDaddy; currently pointing at the old Vercel portfolio, which stays live until cutover). `site` is set in `astro.config.mjs`; it's inert build metadata and does not affect DNS or the old site.
 
-## With the page build
+## With the remaining page build
 
-- **Add `@astrojs/sitemap` and `public/robots.txt`** — both depend on `site` being set.
+- **Add `@astrojs/sitemap` and `public/robots.txt`** — `site` is already set, so these can land with any section PR; latest by launch.
 - **Add a 404 page** (`src/pages/404.astro`) and set `"not_found_handling": "404-page"` in the `assets` block of `wrangler.jsonc`.
-- **Replace the placeholder `<title>Astro</title>` / `<h1>`** in `src/pages/index.astro` and add a meta description. Do not deploy before this.
-- **Review font preloads**: all four Archivo weights (400/500/600/800) are currently loaded with `preload` on the `<Font>` component. Once the real page exists, preload only the weights used above the fold.
+- **Review font weights**: all four Archivo weights (400/500/600/800) are configured, but the Home section uses only 400 — the `<Font>` component already preloads just `weight: 400`, and unused weights are only fetched if a rule references them. Once all sections are built, drop weights nothing uses and extend the preload filter to whatever is above the fold.
+
+## Domain cutover (after the new site is deployed and verified)
+
+None of this lives in the repo; it retires the old Vercel portfolio, so do it last.
+
+1. **Deploy and verify** the new site on its `portfolio.<account>.workers.dev` URL. Canonical tags pointing at timurjalilov.com from the preview URL are correct, not a problem.
+2. **Move DNS to Cloudflare**: add timurjalilov.com as a site in the Cloudflare account (free plan), let it import the existing DNS records, then switch the nameservers at GoDaddy to Cloudflare's. The imported records still point at Vercel, so the old site keeps serving through propagation.
+3. **Attach the custom domain to the Worker** (Worker settings → custom domains → timurjalilov.com). Cloudflare creates the DNS record and certificate; this is the moment traffic flips to the new site. Reversible by deleting the custom domain.
+
+Steps 2–3 can wait any amount of time after the deploy with no downside.
 
 ## When upstream allows
 

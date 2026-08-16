@@ -1,0 +1,230 @@
+---
+import { Image } from "astro:assets";
+
+import portrait from "../assets/portrait-bw.png";
+
+const stats = [
+  { value: "+05", label: "Years in finance" },
+  { value: "+03", label: "Products in production" },
+];
+
+const railLabelClass =
+  "rotate-180 text-[11px] tracking-[0.14em] text-muted [writing-mode:vertical-rl]";
+---
+
+<section id="hero" class="hero mx-auto grid max-w-page">
+  <div class="hero-left grid">
+    <div class="hero-rail flex flex-col items-center gap-6 py-7">
+      <span class={railLabelClass}>Senior Frontend Engineer</span>
+      <span class="min-h-10 w-px flex-1 bg-hair"></span>
+      <span class={railLabelClass}>2026</span>
+    </div>
+    <div class="hero-copy flex flex-col justify-end">
+      <div class="hero-center">
+        <div class="hero-stats flex">
+          {
+            stats.map(({ value, label }) => (
+              <div class="flex flex-col gap-1.5">
+                <span class="stat-num leading-none tracking-[-0.03em]">
+                  {value}
+                </span>
+                <span class="text-[13px] tracking-[0.04em] text-muted">
+                  {label}
+                </span>
+              </div>
+            ))
+          }
+        </div>
+        <h1 class="hero-title leading-[0.88] font-normal tracking-[-0.04em]">
+          Timur<br />Jalilov
+        </h1>
+        <div class="hero-blurb flex items-start gap-3.5">
+          <span class="mt-[11px] h-px w-4 flex-none bg-line"></span>
+          <p class="text-[15px] leading-[1.55] text-pretty text-muted">
+            I build the frontends of real-time trading platforms. At Onyx
+            Capital Group I led the greenfield rebuild of an energy-commodities
+            terminal and now lead the frontend team behind it.
+          </p>
+        </div>
+      </div>
+      <a href="#experience" class="hero-scroll text-[13px] text-muted">
+        Scroll Down ↓
+      </a>
+    </div>
+  </div>
+  <div class="hero-media relative">
+    <Image
+      src={portrait}
+      alt="Timur Jalilov"
+      layout="full-width"
+      priority
+      sizes="(max-width: 700px) 100vw, (max-width: 900px) 50vw, (max-width: 1600px) 56vw, 896px"
+      class="absolute w-full"
+    />
+  </div>
+</section>
+
+<style>
+  /* The hero's layout composition changes shape per tier (elements switch
+     positioning mode and anchor), so it lives here as cascade rules; the
+     markup utilities cover everything that is the same at every width.
+
+     The 900/700 values are --breakpoint-tablet/--breakpoint-phone from
+     global.css, written out because media queries can't read CSS variables,
+     and Astro's scoped-style compiler doesn't process selectors inside
+     `@variant` blocks (scoping and :global() are left unapplied). Range
+     syntax matches the strict `<` the max-* variants compile to. */
+
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    /* svh: equals vh on desktop, and stays stable on mobile when the
+       browser chrome collapses (dvh would resize the hero mid-scroll). */
+    min-height: calc(100svh - var(--headerH));
+  }
+  .hero-left {
+    grid-template-columns: 46px 1fr;
+  }
+  .hero-copy {
+    padding: 40px 20px 32px 64px;
+  }
+  .hero-title {
+    font-size: clamp(56px, 8.5vw, 132px);
+  }
+  .stat-num {
+    font-size: 42px;
+  }
+  .hero-stats {
+    gap: 72px;
+  }
+  .hero-media {
+    min-height: 520px;
+  }
+  .hero-media :global(img) {
+    inset: 0;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 8%;
+  }
+
+  /* Above the phone tier the name is centred in the left column, with the
+     stats and blurb hung off it. */
+  @media (width >= 700px) {
+    .hero-copy {
+      position: relative;
+    }
+    .hero-center {
+      position: absolute;
+      top: 50%;
+      right: 20px;
+      left: 64px;
+      translate: 0 -50%;
+    }
+    .hero-stats {
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      margin-bottom: 88px;
+    }
+    .hero-blurb {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 24px;
+      max-width: 44ch;
+    }
+  }
+
+  /* Tablet and below: no rail, single left column, cropped portrait. */
+  @media (width < 900px) {
+    .hero-left {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .hero-rail {
+      display: none;
+    }
+    .hero-stats {
+      gap: 40px;
+    }
+    .hero-media {
+      overflow: hidden;
+    }
+  }
+
+  /* Tablet band only: two-column hero — name left, portrait right at its
+     natural proportion, centred vertically with the name. */
+  @media (700px <= width < 900px) {
+    .hero {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+    }
+    .hero-copy {
+      padding: 24px;
+    }
+    .hero-center {
+      left: 24px;
+    }
+    .hero-stats {
+      margin-bottom: 44px;
+    }
+    .stat-num {
+      font-size: 32px;
+    }
+    .hero-title {
+      font-size: clamp(40px, 12vw, 92px);
+    }
+    .hero-blurb {
+      margin-top: 20px;
+      max-width: 34ch;
+    }
+    .hero-media :global(img) {
+      inset: 50% auto auto 50%;
+      transform: translate(-50%, -50%);
+      height: 116%;
+      object-fit: contain;
+      object-position: 50% 50%;
+    }
+  }
+
+  /* Phone: name + blurb stacked, full-bleed photo, stats and scroll cue
+     pinned to the hero's bottom-left. */
+  @media (width < 700px) {
+    .hero {
+      position: relative;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      padding-bottom: 152px;
+    }
+    .hero-copy {
+      padding: 10px 20px 12px;
+    }
+    .hero-center {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .hero-title {
+      font-size: clamp(36px, 13vw, 58px);
+    }
+    .hero-stats {
+      position: absolute;
+      right: 20px;
+      bottom: 64px;
+      left: 20px;
+      align-items: flex-end;
+    }
+    .stat-num {
+      font-size: 30px;
+    }
+    .hero-scroll {
+      position: absolute;
+      bottom: 24px;
+      left: 20px;
+    }
+    .hero-media {
+      min-height: 74vw;
+      margin: 18px 0 26px;
+    }
+    .hero-media :global(img) {
+      object-position: 50% 18%;
+    }
+  }
+</style>
