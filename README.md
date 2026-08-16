@@ -1,6 +1,6 @@
 # portfolio
 
-Personal portfolio site — a minimalist, static single page built with [Astro](https://astro.build) and the "Modernist" design system.
+Personal portfolio site — a minimalist, static single page built with [Astro](https://astro.build). Design and style tokens come from a custom design — see [docs/design.md](docs/design.md).
 
 ## Commands
 
@@ -17,4 +17,4 @@ Requires Node ≥ 22.12 and pnpm (pinned via the `packageManager` field).
 
 ## Deploying
 
-Deploys to Cloudflare Workers as static assets via Workers Builds — see [docs/deploying.md](docs/deploying.md).
+Deploys to Cloudflare Workers as static assets via Workers Builds — see [docs/deploying.md](docs/deploying.md). Pre-launch items are tracked in [docs/launch-checklist.md](docs/launch-checklist.md).
