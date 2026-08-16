@@ -14,3 +14,7 @@ Personal portfolio site — a minimalist, static single page built with [Astro](
 | `pnpm format`  | Format the codebase with Prettier        |
 
 Requires Node ≥ 22.12 and pnpm (pinned via the `packageManager` field).
+
+## Deploying
+
+Deploys to Cloudflare Workers as static assets via Workers Builds — see [docs/deploying.md](docs/deploying.md).
