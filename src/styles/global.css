@@ -63,6 +63,28 @@
   --container-page: 1600px;
 }
 
+/* Shared section gutter: the horizontal inset every section's scoped styles
+   consume. Media query conditions can't read variables, but declarations
+   can, so the 36→20 step lives here once. (700 is --breakpoint-phone. The
+   Header doesn't use this: per the design its inset steps on the 900px tier
+   and to different values — 36/20/16 — so header and section content edges
+   deliberately disagree below 900px.) */
+:root {
+  --gutter: 36px;
+}
+@media (width < 700px) {
+  :root {
+    --gutter: 20px;
+  }
+}
+
+/* Section fills the viewport under the header. svh: equals vh on desktop,
+   and stays stable on mobile when the browser chrome collapses (dvh would
+   resize the section mid-scroll). */
+@utility section-screen {
+  min-height: calc(100svh - var(--headerH));
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -71,6 +93,13 @@
   @media (prefers-reduced-motion: reduce) {
     html {
       scroll-behavior: auto;
+    }
+    /* 0.01ms, not 0: transitionend must still fire for scripts that wait on
+       it (the read-more clamp in Experience.astro). */
+    *,
+    ::before,
+    ::after {
+      transition-duration: 0.01ms !important;
     }
   }
   body {
@@ -98,9 +127,9 @@
   html.theme-switching body,
   html.theme-switching body * {
     transition:
-      background-color 260ms ease,
-      color 260ms ease,
-      border-color 260ms ease,
-      outline-color 260ms ease;
+      background-color 500ms ease,
+      color 500ms ease,
+      border-color 500ms ease,
+      outline-color 500ms ease;
   }
 }

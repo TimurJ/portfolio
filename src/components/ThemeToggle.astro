@@ -36,7 +36,7 @@ const iconAttrs = {
 <script>
   import { THEME_ATTRIBUTE, THEME_STORAGE_KEY } from "../lib/theme";
 
-  /* The 260ms fade in global.css applies only while .theme-switching is on
+  /* The 500ms fade in global.css applies only while .theme-switching is on
      the root, so it runs exactly for the flip and never on hover or load.
      The removal timeout below must outlast that fade or it truncates. */
   const root = document.documentElement;
@@ -50,7 +50,7 @@ const iconAttrs = {
       clearTimeout(switchTimeout);
       switchTimeout = setTimeout(
         () => root.classList.remove("theme-switching"),
-        300,
+        560,
       );
       if (next === "dark") {
         root.setAttribute(THEME_ATTRIBUTE, "dark");

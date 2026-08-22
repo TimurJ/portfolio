@@ -1,0 +1,15 @@
+---
+interface Props {
+  /** Extra utilities for the consumer's context (placement, responsive size). */
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<a
+  href="#contact"
+  class:list={["border-b border-line pb-0.5 text-[13px]", className]}
+>
+  Book A Call ↗
+</a>

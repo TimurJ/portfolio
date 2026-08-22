@@ -1,4 +1,5 @@
 ---
+import BookCallCta from "./BookCallCta.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 
 const navLinks = [
@@ -17,35 +18,127 @@ const navLinks = [
     aria-label="Main"
     class="flex flex-wrap items-center gap-[26px] text-[13px] phone:max-tablet:text-[12px] max-tablet:gap-[18px] max-phone:gap-4 max-phone-sm:flex-nowrap max-phone-sm:gap-3.5 max-phone-sm:text-[12px]"
   >
-    {navLinks.map(({ href, label }) => <a href={href}>{label}</a>)}
+    {
+      navLinks.map(({ href, label }) => (
+        <a href={href} class="border-b border-transparent pb-0.5">
+          {label}
+        </a>
+      ))
+    }
   </nav>
   <div
     class="flex items-center gap-5 max-tablet:gap-3.5 max-tablet:whitespace-nowrap"
   >
     <ThemeToggle />
-    <a
-      href="#contact"
-      class="border-b border-line pb-0.5 text-[13px] max-phone-sm:text-[12px]"
-    >
-      Book A Call ↗
-    </a>
+    <BookCallCta class="max-phone-sm:text-[12px]" />
   </div>
 </header>
 
+<style>
+  /* The slow fade makes the highlight glide between links as scrolling hands
+     one section's ownership of the viewport to the next. */
+  nav a {
+    transition:
+      color 700ms ease,
+      border-color 700ms ease;
+  }
+  nav a[aria-current] {
+    color: var(--accent-text);
+    border-bottom-color: currentColor;
+  }
+</style>
+
 <script>
-  /* The hero's min-height and the anchor scroll offset both depend on the
-     header's real (content-driven) height. The observer fires once on
-     observe() — before first paint — so no eager measurement is needed. */
   const header = document.getElementById("site-header");
   if (header) {
+    /* Highlight the nav link for the section that owns the viewport: the one
+       whose box spans the point just below the header. Sections that aren't
+       built yet simply never match. Links are tracked by their #hash — the
+       one identity a link and its section share. */
+    const navLinks = [
+      ...header.querySelectorAll<HTMLAnchorElement>('nav a[href^="#"]'),
+    ].map((link) => ({
+      link,
+      section: document.getElementById(link.hash.slice(1)),
+    }));
+    const defaultHash = navLinks[0]?.link.hash;
+
+    let headerHeight = 0;
+    let lockedHash: string | null = null;
+    let lockTimeout: ReturnType<typeof setTimeout>;
+    let lastActive: string | undefined;
+
+    const syncActiveNav = () => {
+      let activeHash = lockedHash ?? defaultHash;
+      if (!lockedHash) {
+        const probeY = headerHeight + 8;
+        for (const { link, section } of navLinks) {
+          if (!section) continue;
+          const rect = section.getBoundingClientRect();
+          if (rect.top <= probeY && rect.bottom > probeY) {
+            activeHash = link.hash;
+            break;
+          }
+        }
+      }
+      if (activeHash === lastActive) return;
+      lastActive = activeHash;
+      for (const { link } of navLinks) {
+        if (link.hash === activeHash) {
+          link.setAttribute("aria-current", "location");
+        } else {
+          link.removeAttribute("aria-current");
+        }
+      }
+    };
+
+    let syncQueued = false;
+    const queueSync = () => {
+      if (syncQueued) return;
+      syncQueued = true;
+      requestAnimationFrame(() => {
+        syncQueued = false;
+        syncActiveNav();
+      });
+    };
+
+    /* Section heights (`section-screen`) and the anchor scroll offset both
+       depend on the header's real (content-driven) height, and the sticky
+       header's top edge is always 0, so this height is also the probe origin
+       syncActiveNav needs — one measurement serves both. The observer fires
+       once on observe() — before first paint — so no eager measurement is
+       needed and its initial delivery is the init sync. */
     new ResizeObserver((entries) => {
       const size = entries[0]?.borderBoxSize[0];
       if (size) {
+        headerHeight = size.blockSize;
         document.documentElement.style.setProperty(
           "--headerH",
           `${size.blockSize}px`,
         );
+        queueSync();
       }
     }).observe(header);
+
+    /* While an in-page anchor click's smooth scroll is in flight, the target
+       owns the highlight, so it moves at the same moment whichever direction
+       the scroll comes from. The 900ms lock outlasts the scroll itself. */
+    document.addEventListener("click", (event) => {
+      const link =
+        event.target instanceof Element
+          ? event.target.closest<HTMLAnchorElement>('a[href^="#"]')
+          : null;
+      if (!link || !document.getElementById(link.hash.slice(1))) return;
+      lockedHash = link.hash;
+      clearTimeout(lockTimeout);
+      lockTimeout = setTimeout(() => {
+        lockedHash = null;
+        syncActiveNav();
+      }, 900);
+      syncActiveNav();
+    });
+
+    window.addEventListener("scroll", queueSync, { passive: true });
+    window.addEventListener("resize", queueSync);
   }
 </script>

@@ -1,6 +1,6 @@
 # portfolio
 
-Personal portfolio site — a minimalist, static single page built with [Astro](https://astro.build). Design and style tokens come from a custom design — see [docs/design.md](docs/design.md).
+Personal portfolio site — a minimalist, static single page built with [Astro](https://astro.build). Design and style tokens come from a custom design — see [docs/design.md](docs/design.md). Project structure, styling policy, and the decision record live in [docs/architecture.md](docs/architecture.md).
 
 ## Commands
 
