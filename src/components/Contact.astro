@@ -1,0 +1,45 @@
+---
+import { type SectionId } from "../lib/nav";
+import { email } from "../lib/site";
+import SectionIntro from "./SectionIntro.astro";
+
+const sectionId: SectionId = "contact";
+const mailto = `mailto:${email}`;
+---
+
+<section id={sectionId} class="contact-screen flex flex-col">
+  <SectionIntro
+    closer
+    class="mx-auto w-full max-w-page flex-1 content-center"
+    eyebrow="Contact"
+    title="Let's Start A Conversation"
+    blurb="Whether it's a question about the work here, a problem you're weighing up, or just a conversation worth having, my inbox is open. I read everything and reply within a couple of days."
+  >
+    <div class="flex flex-wrap items-center gap-6" slot="cta">
+      <a
+        href={mailto}
+        class="contact-btn inline-flex items-center gap-3 bg-accent px-[22px] py-3.5 text-[13px] tracking-[0.02em] text-white hover:bg-accent-text"
+      >
+        Book A Call ↗
+      </a>
+      <a href={mailto} class="border-b border-line pb-0.5 text-[13px]">
+        Send An Email ↗
+      </a>
+    </div>
+  </SectionIntro>
+</section>
+
+<style>
+  .contact-screen {
+    /* The section and the site footer (a sibling of <main>, so it can be a
+       contentinfo landmark) still share the final viewport: subtract the
+       footer's measured height (--footerH, owned by Footer.astro) as well as
+       the header's from the screen-filling formula section-screen uses. */
+    min-height: calc(100svh - var(--headerH) - var(--footerH));
+  }
+  .contact-btn {
+    /* The design's `ease`, which transition-colors' default curve isn't. Only
+       the background moves on hover — the text is pinned white. */
+    transition: background-color 220ms ease;
+  }
+</style>

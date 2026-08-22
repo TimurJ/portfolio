@@ -1,9 +1,15 @@
 ---
 import Blog from "../components/Blog.astro";
+import Contact from "../components/Contact.astro";
 import Experience from "../components/Experience.astro";
+import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import Hero from "../components/Hero.astro";
 import Base from "../layouts/Base.astro";
+import { hrefOf, sections } from "../lib/nav";
+
+// Each section's scroll-cue target is the next entry in the shared order.
+const [, experienceLink, blogLink, contactLink] = sections;
 ---
 
 <Base
@@ -12,8 +18,10 @@ import Base from "../layouts/Base.astro";
 >
   <Header />
   <main>
-    <Hero nextHref="#experience" />
-    <Experience nextHref="#blog" />
-    <Blog nextHref="#contact" />
+    <Hero nextHref={hrefOf(experienceLink.id)} />
+    <Experience nextHref={hrefOf(blogLink.id)} />
+    <Blog nextHref={hrefOf(contactLink.id)} />
+    <Contact />
   </main>
+  <Footer />
 </Base>

@@ -12,13 +12,20 @@
 /* Tailwind dark: utilities follow the data-theme toggle, not the OS setting */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-/* Fallback for Header's measured height (see the ResizeObserver in
-   Header.astro, which owns this value) — not a design token. */
+/* Fallbacks for the measured chrome heights — not design tokens. Each is
+   owned by a ResizeObserver in its component: --headerH by Header.astro
+   (fallback: the header's natural desktop height), --footerH by Footer.astro
+   (fallback 0px: without measurement Contact's CTA simply takes the full
+   screen and the footer follows below it). */
 :root {
   --headerH: 58px;
+  --footerH: 0px;
 }
 
 :root {
+  /* Keep UA-rendered surfaces (scrollbars, form controls, overscroll) on the
+     page's palette; the dark block flips it with the tokens. */
+  color-scheme: light;
   --bg: #ffffff;
   --ink: #1c1c1c;
   --muted: #6a6a6a;
@@ -27,10 +34,15 @@
   --accent: #d80000;
   --accent-text: #b40000;
   --dot: #d80000;
-  --img: grayscale(1) contrast(1.05);
+  /* Dim levels for text on the inverted footer panel (bg-ink). Dark mode
+     lifts them: the panel turns light there, and 50% ink on it falls to
+     ~3.5:1 contrast. */
+  --on-ink-dim: 0.5;
+  --on-ink-mid: 0.75;
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --bg: #0e0e0e;
   --ink: #ededed;
   --muted: #a2a2a2;
@@ -39,6 +51,8 @@
   --accent: #e01000;
   --accent-text: #ff5a4d;
   --dot: #e01000;
+  --on-ink-dim: 0.68;
+  --on-ink-mid: 0.88;
 }
 
 /* Expose the tokens as Tailwind utilities (bg-bg, text-ink, border-line,
@@ -57,12 +71,13 @@
 }
 
 /* Layout constants from the design: the responsive tiers (exposed as
-   max-tablet:/max-phone:/max-phone-sm: variants for markup; media queries —
-   here and in scoped styles — write the ranges out, with a comment naming
-   the tier) and the page container width (max-w-page). Static values, so
-   they live in a plain @theme block — media queries can't read CSS
-   variables. */
+   max-laptop:/max-tablet:/max-phone:/max-phone-sm: variants for markup;
+   media queries — here and in scoped styles — write the ranges out, with a
+   comment naming the tier) and the page container width (max-w-page).
+   Static values, so they live in a plain @theme block — media queries can't
+   read CSS variables. */
 @theme {
+  --breakpoint-laptop: 1100px;
   --breakpoint-tablet: 900px;
   --breakpoint-phone: 700px;
   --breakpoint-phone-sm: 460px;
@@ -84,13 +99,14 @@
   }
 }
 
-/* A section's outer box: page-width, centered, filling the viewport under
-   the header. svh: equals vh on desktop, and stays stable on mobile when the
-   browser chrome collapses (dvh would resize the section mid-scroll). */
+/* A section's viewport-filling height under the header. Height only: the
+   page-width cap is the markup pair `mx-auto max-w-page` (header and sections
+   alike), so a full-bleed section like Contact's footer panel can take the
+   height without it. svh: equals vh on desktop, and stays stable on mobile
+   when the browser chrome collapses (dvh would resize the section
+   mid-scroll). */
 @utility section-screen {
   min-height: calc(100svh - var(--headerH));
-  margin-inline: auto;
-  max-width: var(--container-page);
 }
 
 /* A section's evenly-distributed content list, inset by the shared gutter.
@@ -111,6 +127,14 @@
   @media (width < 700px) {
     padding-block: 14px 24px;
   }
+}
+
+/* Theme-flip fade duration. ThemeToggle.astro co-owns this value: its
+   cleanup timeout reads it and adds a settle margin, so script and CSS can't
+   drift. A deliberate deviation from the design's ~260ms (see
+   docs/architecture.md, Decisions). */
+:root {
+  --theme-fade: 500ms;
 }
 
 @layer base {
@@ -159,9 +183,9 @@
   html.theme-switching body,
   html.theme-switching body * {
     transition:
-      background-color 500ms ease,
-      color 500ms ease,
-      border-color 500ms ease,
-      outline-color 500ms ease;
+      background-color var(--theme-fade) ease,
+      color var(--theme-fade) ease,
+      border-color var(--theme-fade) ease,
+      outline-color var(--theme-fade) ease;
   }
 }

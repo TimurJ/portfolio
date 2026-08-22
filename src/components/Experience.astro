@@ -1,10 +1,12 @@
 ---
+import { iconAttrs } from "../lib/icons";
+import { type SectionHref, type SectionId } from "../lib/nav";
 import ScrollCue from "./ScrollCue.astro";
 import SectionIntro from "./SectionIntro.astro";
 
 interface Props {
   /** Scroll-cue target: the next section, owned by the page's composition. */
-  nextHref: string;
+  nextHref: SectionHref;
 }
 
 type ExperienceEntry = {
@@ -59,12 +61,13 @@ const experiences: ExperienceEntry[] = [
   },
 ];
 
+const sectionId: SectionId = "experience";
 const { nextHref } = Astro.props;
 
 const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
 ---
 
-<section id="experience" class="section-screen flex flex-col">
+<section id={sectionId} class="mx-auto flex section-screen max-w-page flex-col">
   <SectionIntro
     condensed
     eyebrow="Experiences"
@@ -94,24 +97,14 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
             >
               <span class="label-more">Read more</span>
               <span class="label-less">Show less</span>
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
+              <svg {...iconAttrs(12, 2)}>
                 <path d="m6 9 6 6 6-6" />
               </svg>
             </button>
           </div>
           <div class="exp-pills flex min-w-0 flex-wrap content-start">
             {pills.map((pill) => (
-              <span class="pill rounded-full border border-line uppercase whitespace-nowrap">
+              <span class="pill rounded-full border border-line whitespace-nowrap uppercase">
                 {pill}
               </span>
             ))}
@@ -120,15 +113,16 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
       ))
     }
   </div>
-  <div class="section-cue exp-cue">
+  <div class="exp-cue section-cue">
     <ScrollCue href={nextHref} />
   </div>
 </section>
 
 <style>
   /* Per-tier rules live here per the styling policy (docs/architecture.md);
-     1100/1000 are this section's design tiers, 700/460 are
-     --breakpoint-phone/--breakpoint-phone-sm written out. */
+     1100/700/460 are --breakpoint-laptop/--breakpoint-phone/
+     --breakpoint-phone-sm written out; 1000 is this section's own
+     mid-laptop tier. */
 
   .exp-row {
     grid-template-columns: minmax(0, 10fr) minmax(0, 12fr) minmax(0, 9fr);
@@ -178,7 +172,7 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
   .exp-row[data-open] .label-less {
     display: inline;
   }
-  /* Tablet: tighter rows, smaller type and pills. */
+  /* Laptop: tighter rows, smaller type and pills. */
   @media (width < 1100px) {
     .exp-row {
       padding: 16px 0;
@@ -291,13 +285,15 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
       const willOpen = !row.hasAttribute("data-open");
       description.style.maxHeight = `${description.scrollHeight}px`;
       if (willOpen) {
-        description.addEventListener(
-          "transitionend",
-          () => {
-            description.style.maxHeight = "";
-          },
-          { once: true },
-        );
+        /* Only the max-height transition may clear the pixel height — the
+           theme-flip fade also transitions this element, and its stray
+           transitionend mid-expand would truncate the animation. */
+        const clearOnSettle = (event: TransitionEvent) => {
+          if (event.propertyName !== "max-height") return;
+          description.style.maxHeight = "";
+          description.removeEventListener("transitionend", clearOnSettle);
+        };
+        description.addEventListener("transitionend", clearOnSettle);
       } else {
         requestAnimationFrame(() => {
           description.style.maxHeight = "";
