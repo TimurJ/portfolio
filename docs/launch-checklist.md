@@ -23,6 +23,16 @@ None of this lives in the repo; it retires the old Vercel portfolio, so do it la
 
 Steps 2–3 can wait any amount of time after the deploy with no downside.
 
+## Deferred hardening
+
+- **Content-Security-Policy** — the other security headers ship in
+  `public/_headers`, but a CSP is deferred: the built HTML carries the inline
+  pre-paint theme script plus small module scripts and a stylesheet that Astro
+  inlines by default, so a real CSP means per-build hashes or externalizing
+  them (`inlineStylesheets: "never"`), trading away first-paint behavior. Do it
+  as part of launch-freeze, and let `frame-ancestors` supersede
+  `X-Frame-Options` then.
+
 ## When upstream allows
 
 - **TypeScript 7**: currently out of range — `@astrojs/check` declares peer support for `^5 || ^6` only. Bump when its peer range admits `^7`.

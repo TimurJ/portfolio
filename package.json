@@ -1,8 +1,22 @@
 {
   "name": "portfolio",
+  "description": "Personal portfolio — a static one-page site built with Astro and Tailwind CSS",
   "type": "module",
   "version": "0.0.1",
   "private": true,
+  "license": "MIT",
+  "author": "Timur Jalilov",
+  "homepage": "https://timurjalilov.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TimurJ/portfolio.git"
+  },
+  "keywords": [
+    "astro",
+    "tailwindcss",
+    "portfolio",
+    "static-site"
+  ],
   "packageManager": "pnpm@11.22.0",
   "engines": {
     "node": ">=24.16.0"
@@ -16,7 +30,8 @@
     "typecheck": "astro check",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm build"
+    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm build",
+    "deploy": "astro build && wrangler deploy"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -34,6 +49,7 @@
     "prettier-plugin-tailwindcss": "^0.8.1",
     "sharp": "^0.35.3",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.67.0"
+    "typescript-eslint": "^8.67.0",
+    "wrangler": "4.125.0"
   }
 }
