@@ -1,2 +1,7 @@
 allowBuilds:
   esbuild: true
+# eslint-plugin-jsx-a11y's peer range stops at ESLint 9, but eslint-plugin-astro
+# (which requires ESLint >=10) wraps its rules and pins it as an optional peer.
+peerDependencyRules:
+  allowedVersions:
+    "eslint-plugin-jsx-a11y>eslint": "10"

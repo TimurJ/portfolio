@@ -67,7 +67,7 @@ const { nextHref } = Astro.props;
 const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
 ---
 
-<section id={sectionId} class="section-screen mx-auto flex max-w-page flex-col">
+<section id={sectionId} class="mx-auto flex section-screen max-w-page flex-col">
   <SectionIntro
     condensed
     eyebrow="Experiences"
@@ -104,7 +104,7 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
           </div>
           <div class="exp-pills flex min-w-0 flex-wrap content-start">
             {pills.map((pill) => (
-              <span class="pill rounded-full border border-line uppercase whitespace-nowrap">
+              <span class="pill rounded-full border border-line whitespace-nowrap uppercase">
                 {pill}
               </span>
             ))}
@@ -113,7 +113,7 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
       ))
     }
   </div>
-  <div class="section-cue exp-cue">
+  <div class="exp-cue section-cue">
     <ScrollCue href={nextHref} />
   </div>
 </section>
