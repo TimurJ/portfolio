@@ -10,6 +10,7 @@ Decided: **https://timurjalilov.com** (registered at GoDaddy; currently pointing
 
 - **Add `@astrojs/sitemap` and `public/robots.txt`** — `site` is already set, so these can land with any section PR; latest by launch.
 - **Add a 404 page** (`src/pages/404.astro`) and set `"not_found_handling": "404-page"` in the `assets` block of `wrangler.jsonc`.
+- **Add an `og:image` social card** — `Base.astro` ships `og:title/description/url/type` and `twitter:card: summary`, but no image yet; design a social card (or crop the portrait), drop it in `public/`, and add `og:image` + switch the card type if it warrants `summary_large_image`.
 - **Review font weights**: all four Archivo weights (400/500/600/800) are configured, but the Home section uses only 400 — the `<Font>` component already preloads just `weight: 400`, and unused weights are only fetched if a rule references them. Once all sections are built, drop weights nothing uses and extend the preload filter to whatever is above the fold.
 
 ## Domain cutover (after the new site is deployed and verified)

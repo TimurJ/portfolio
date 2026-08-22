@@ -294,13 +294,15 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
       const willOpen = !row.hasAttribute("data-open");
       description.style.maxHeight = `${description.scrollHeight}px`;
       if (willOpen) {
-        description.addEventListener(
-          "transitionend",
-          () => {
-            description.style.maxHeight = "";
-          },
-          { once: true },
-        );
+        /* Only the max-height transition may clear the pixel height — the
+           theme-flip fade also transitions this element, and its stray
+           transitionend mid-expand would truncate the animation. */
+        const clearOnSettle = (event: TransitionEvent) => {
+          if (event.propertyName !== "max-height") return;
+          description.style.maxHeight = "";
+          description.removeEventListener("transitionend", clearOnSettle);
+        };
+        description.addEventListener("transitionend", clearOnSettle);
       } else {
         requestAnimationFrame(() => {
           description.style.maxHeight = "";

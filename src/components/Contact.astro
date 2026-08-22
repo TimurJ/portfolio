@@ -1,23 +1,10 @@
 ---
-import { navLinks } from "../lib/nav";
+import { email } from "../lib/site";
 
-const email = "timurjalilov1@gmail.com";
 const mailto = `mailto:${email}`;
-const year = new Date().getFullYear();
-
-// The footer doesn't link to the section it sits in.
-const footerNav = navLinks.filter(({ href }) => href !== "#contact");
-
-const elsewhere = [
-  { href: "https://github.com/TimurJ", label: "GitHub ↗" },
-  { href: "https://www.linkedin.com/in/timur-jalilov/", label: "LinkedIn ↗" },
-];
-
-const footerLinkClass = "text-bg hover:text-accent";
-const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
 ---
 
-<section id="contact" class="section-screen flex flex-col">
+<section id="contact" class="contact-screen flex flex-col">
   <div class="contact-cta mx-auto grid w-full max-w-page flex-1 content-center">
     <div class="flex flex-col gap-[18px]">
       <span
@@ -50,71 +37,20 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
       </div>
     </div>
   </div>
-  <footer class="bg-ink text-bg">
-    <div class="footer-inner mx-auto w-full max-w-page">
-      <a
-        href={mailto}
-        class:list={[
-          "footer-email inline-block leading-none tracking-[-0.04em]",
-          footerLinkClass,
-        ]}
-      >
-        {email}
-      </a>
-      <div class="footer-cols grid border-t border-bg/24">
-        <div class="flex flex-col gap-3.5">
-          <span class={footerLabelClass}>Navigate</span>
-          {
-            footerNav.map(({ href, label }) => (
-              <a href={href} class={footerLinkClass}>
-                {label}
-              </a>
-            ))
-          }
-        </div>
-        <div class="flex flex-col gap-3.5">
-          <span class={footerLabelClass}>Elsewhere</span>
-          {
-            elsewhere.map(({ href, label }) => (
-              <a href={href} class={footerLinkClass}>
-                {label}
-              </a>
-            ))
-          }
-          {
-            /* No CV hosted yet — becomes a link like the two above once it is. */
-          }
-          <span>Résumé ↗</span>
-        </div>
-        <div class="flex flex-col gap-3.5">
-          <span class={footerLabelClass}>Based in</span>
-          <span class="opacity-(--on-ink-mid)">London, UK</span>
-          <span class="opacity-(--on-ink-mid)">Open to remote</span>
-        </div>
-      </div>
-      <div
-        class="footer-legal flex flex-wrap justify-between opacity-(--on-ink-dim)"
-      >
-        <span>
-          <span class="legal-long">
-            © {year} Timur Jalilov. All rights reserved.
-          </span>
-          <span class="legal-short">© {year} Timur Jalilov</span>
-        </span>
-        <span>
-          <span class="legal-long">Designed and built in London</span>
-          <span class="legal-short">Built in London</span>
-        </span>
-      </div>
-    </div>
-  </footer>
 </section>
 
 <style>
   /* Per-tier rules live here per the styling policy (docs/architecture.md);
-     1100/410 are this section's design tiers, 700 is --breakpoint-phone
-     written out. */
+     1100 is this section's design tier, 700 is --breakpoint-phone written
+     out. */
 
+  .contact-screen {
+    /* The section and the site footer (a sibling of <main>, so it can be a
+       contentinfo landmark) still share the final viewport: subtract the
+       footer's measured height (--footerH, owned by Footer.astro) as well as
+       the header's from the screen-filling formula section-screen uses. */
+    min-height: calc(100svh - var(--headerH) - var(--footerH));
+  }
   .contact-cta {
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     gap: 40px;
@@ -135,35 +71,8 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
     font-size: 15px;
     line-height: 1.6;
   }
-  .footer-inner {
-    padding: clamp(32px, 5vh, 56px) var(--gutter) clamp(20px, 3vh, 30px);
-  }
-  .footer-email {
-    font-size: clamp(28px, 6.2vw, 92px);
-  }
-  .footer-cols {
-    /* The empty trailing track is the design's spacer: it keeps the three
-       columns hugging the left edge at 1/4.2 of the row each. */
-    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.2fr);
-    gap: 32px;
-    margin-top: clamp(36px, 6vh, 72px);
-    padding-top: 26px;
-    font-size: 13px;
-  }
-  .footer-label {
-    font-size: 11px;
-    letter-spacing: 0.12em;
-  }
-  .footer-legal {
-    gap: 16px;
-    margin-top: clamp(28px, 4vh, 48px);
-    font-size: 12px;
-  }
-  .legal-short {
-    display: none;
-  }
 
-  /* Tablet: tighter CTA, three-column footer, viewport-scaled email. */
+  /* Tablet: tighter CTA. */
   @media (width < 1100px) {
     .contact-cta {
       grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
@@ -177,18 +86,9 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
       font-size: 13.5px;
       line-height: 1.5;
     }
-    .footer-cols {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 26px 24px;
-      font-size: 12.5px;
-    }
-    .footer-email {
-      font-size: 7.1vw;
-      white-space: nowrap;
-    }
   }
 
-  /* Phone: single-column CTA, smaller footer type, one-line legal row. */
+  /* Phone: single-column CTA. */
   @media (width < 700px) {
     .contact-cta {
       grid-template-columns: minmax(0, 1fr);
@@ -200,43 +100,6 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
     }
     .contact-title {
       font-size: 30px;
-    }
-    .footer-inner {
-      padding: 32px var(--gutter) 22px;
-    }
-    .footer-email {
-      font-size: clamp(22px, 8.4vw, 40px);
-    }
-    .footer-cols {
-      gap: 20px 14px;
-      margin-top: 32px;
-      font-size: 11.5px;
-    }
-    .footer-label {
-      font-size: 10px;
-      letter-spacing: 0.08em;
-    }
-    .footer-legal {
-      flex-wrap: nowrap;
-      gap: 12px;
-      font-size: 11.5px;
-    }
-    .footer-legal > span {
-      white-space: nowrap;
-    }
-  }
-
-  /* Narrowest phones: short-form legal strings. */
-  @media (width < 410px) {
-    .footer-legal {
-      gap: 10px;
-      font-size: 10.5px;
-    }
-    .legal-long {
-      display: none;
-    }
-    .legal-short {
-      display: inline;
     }
   }
 </style>

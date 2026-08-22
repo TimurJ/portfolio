@@ -12,13 +12,20 @@
 /* Tailwind dark: utilities follow the data-theme toggle, not the OS setting */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-/* Fallback for Header's measured height (see the ResizeObserver in
-   Header.astro, which owns this value) — not a design token. */
+/* Fallbacks for the measured chrome heights — not design tokens. Each is
+   owned by a ResizeObserver in its component: --headerH by Header.astro
+   (fallback: the header's natural desktop height), --footerH by Footer.astro
+   (fallback 0px: without measurement Contact's CTA simply takes the full
+   screen and the footer follows below it). */
 :root {
   --headerH: 58px;
+  --footerH: 0px;
 }
 
 :root {
+  /* Keep UA-rendered surfaces (scrollbars, form controls, overscroll) on the
+     page's palette; the dark block flips it with the tokens. */
+  color-scheme: light;
   --bg: #ffffff;
   --ink: #1c1c1c;
   --muted: #6a6a6a;
@@ -36,6 +43,7 @@
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --bg: #0e0e0e;
   --ink: #ededed;
   --muted: #a2a2a2;

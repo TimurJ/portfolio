@@ -17,17 +17,19 @@ src/
     Hero.astro            Page section
     Experience.astro      Page section
     Blog.astro            Page section
-    Contact.astro         Page section (CTA + site footer)
+    Contact.astro         Page section (contact CTA)
+    Footer.astro          Site footer; owns --footerH
   styles/global.css       Design tokens, Tailwind setup, base styles
   lib/theme.ts            Theme storage-key / attribute constants
   lib/nav.ts              Nav-link constants (the page's table of contents)
+  lib/site.ts             Contact-address constant (Contact + Footer)
   assets/                 Images processed by astro:assets
 public/                   Files served verbatim (favicons, _headers)
 ```
 
 ## Page composition
 
-`index.astro` is the only page. It composes `Base` → `Header` → one component per page section, in scroll order — and passes each section its scroll-cue target (`nextHref`), so section order is knowledge only the page holds. The chain ends at Contact, which takes no `nextHref` and carries no scroll cue — it closes the page with the site footer instead.
+`index.astro` is the only page. It composes `Base` → `Header` → one component per page section, in scroll order — and passes each section its scroll-cue target (`nextHref`), so section order is knowledge only the page holds. The chain ends at Contact, which takes no `nextHref` and carries no scroll cue; the site footer (`Footer`) follows as a sibling _after_ `<main>`, because a `<footer>` nested in `<main>` (or any section) loses its `contentinfo` landmark role.
 
 Ownership boundaries:
 
@@ -69,6 +71,7 @@ Behavior is colocated: each component carries its own `<script>`, which Astro bu
 | `Header.astro`        | Measure the header into `--headerH` (ResizeObserver); sync the active nav link on scroll, with a short lock on in-page anchor clicks (nav links and scroll cues) so the highlight moves immediately |
 | `ThemeToggle.astro`   | Flip `data-theme`, persist the choice, run the temporal fade                                                                                                                                        |
 | `Experience.astro`    | Read-more expand/collapse on the phone tier, animating through an explicit pixel height                                                                                                             |
+| `Footer.astro`        | Measure the footer into `--footerH` (ResizeObserver), which Contact's screen-height formula subtracts                                                                                               |
 
 ## Decisions
 
@@ -79,9 +82,11 @@ Choices a reviewer might question, and why they went this way:
 - **`aria-current="location"` for the active nav link** — the semantically correct signal for "current place in the page", and the styling hook, in one attribute; a `data-` attribute would duplicate state assistive tech can't see.
 - **Unprefixed `mask-image` only** — the build's CSS minifier strips `-webkit-` prefixes per its Baseline browser targets, so authoring them would be dead source; pre-Baseline browsers lose only a cosmetic fade, never the content clamp.
 - **Design-file dead code is not ported** — the design's pill-balancing script (guard condition can never hold) and its 640px article rule (fully shadowed by a later block) are provably inert, so the implementation omits them rather than shipping code that never runs.
-- **Blog rows are non-link `<article>`s** — the design marks them up as anchors, but their `href="#blog"` self-reference is a dead link: a focusable tab stop with no destination that would scroll-jump on click. The hover treatment and pointer cursor stay deliberately — design fidelity carried ahead of the real links; the rows become real `<a>` links when article pages exist.
+- **Blog rows are non-link `<article>`s** — the design marks them up as anchors, but their `href="#blog"` self-reference is a dead link: a focusable tab stop with no destination that would scroll-jump on click. The hover treatment stays — design fidelity carried ahead of the real links — but the design's pointer cursor does not: a pointer promises a click target that doesn't exist yet. The rows become real `<a>` links (and regain the cursor for free) when article pages exist.
 - **Color literals that shadow tokens become tokens** — e.g. the design's hard-coded article hairline is `border-hair` here, so dark mode keeps a visible border.
-- **`section-screen` is height-only** — Contact fills the viewport like every section but its footer panel must bleed the full viewport width, so the utility owns only the height formula; the page-width cap is the plain markup pair `mx-auto max-w-page`, carried by the header and each capped box (section roots, Contact's CTA and footer inners) rather than bundled into the utility.
+- **`section-screen` is height-only** — the utility owns only the height formula; the page-width cap is the plain markup pair `mx-auto max-w-page`, carried by the header and each capped box (section roots, Contact's CTA and the footer's inner) rather than bundled into the utility, so a full-bleed panel like the footer can span the viewport width.
+- **The footer is a `<main>` sibling with a measured height** — the design draws Contact's CTA and the site footer sharing the final screen, but a `<footer>` inside the section can't be a `contentinfo` landmark. So `Footer` sits after `<main>` and mirrors Header's measured-custom-property pattern (`--footerH`), and Contact's `contact-screen` subtracts both chrome heights to keep the pair filling one viewport. Without JS the fallback is `0px`: the CTA takes the full screen and the footer follows.
+- **In-page links say ↓, external links say ↗** — the scroll cues and `BookCallCta` jump within the page, so they share the ↓ glyph; ↗ is reserved for links that leave the page (the footer's GitHub/LinkedIn, mailto CTAs), keeping the affordance vocabulary consistent.
 - **Footer contrast lifts are theme variables** — the footer inverts (`bg-ink` flips with the theme), so in dark mode 50%-opacity text sits on a light panel and falls to ~3.5:1. The dim levels are theme-conditional values, not element state, so they live with the other theme-conditional values in `global.css` (`--on-ink-dim`/`--on-ink-mid`, lifted in the dark block) and the markup consumes them as `opacity-(--var)` utilities.
 - **The Résumé row is a non-link, and the © year is derived** — the design's Résumé row would be a dead `#` link (same rationale as the blog rows), so it's a literal span until a CV is hosted; the legal year comes from build time rather than hard-coding the design's 2026.
 

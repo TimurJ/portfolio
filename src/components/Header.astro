@@ -66,12 +66,12 @@ import ThemeToggle from "./ThemeToggle.astro";
       let activeHash = lockedHash ?? defaultHash;
       if (!lockedHash) {
         const probeY = headerHeight + 8;
+        /* Last section whose top has passed the probe wins — so scrolling
+           into the footer (below the last section) keeps Contact active. */
         for (const { link, section } of navLinks) {
           if (!section) continue;
-          const rect = section.getBoundingClientRect();
-          if (rect.top <= probeY && rect.bottom > probeY) {
+          if (section.getBoundingClientRect().top <= probeY) {
             activeHash = link.hash;
-            break;
           }
         }
       }

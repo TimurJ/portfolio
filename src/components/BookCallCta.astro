@@ -11,5 +11,9 @@ const { class: className } = Astro.props;
   href="#contact"
   class:list={["border-b border-line pb-0.5 text-[13px]", className]}
 >
-  Book A Call ↗
+  {
+    /* ↓, not the design's ↗: this is an in-page jump to #contact, and ↗ is
+      reserved for links that leave the page (see Footer's external links). */
+  }
+  Book A Call ↓
 </a>
