@@ -64,7 +64,10 @@ const { nextHref } = Astro.props;
 const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
 ---
 
-<section id="experience" class="section-screen flex flex-col">
+<section
+  id="experience"
+  class="section-screen mx-auto flex max-w-page flex-col"
+>
   <SectionIntro
     condensed
     eyebrow="Experiences"
