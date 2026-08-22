@@ -5,6 +5,10 @@
    persists the choice in localStorage under "tj-portfolio-theme"). */
 @import "tailwindcss";
 
+/* docs/ is prose that names utilities (design.md's token table) — keep the
+   content scanner out of it so documentation can't ship dead CSS. */
+@source not "../../docs";
+
 /* Tailwind dark: utilities follow the data-theme toggle, not the OS setting */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
@@ -52,10 +56,12 @@
   --font-sans: var(--font-archivo);
 }
 
-/* Layout constants from the design: the responsive tiers (used as
-   max-tablet:/max-phone:/max-phone-sm: variants and via @variant in scoped
-   styles) and the page container width (max-w-page). Static values, so they
-   live in a plain @theme block — media queries can't read CSS variables. */
+/* Layout constants from the design: the responsive tiers (exposed as
+   max-tablet:/max-phone:/max-phone-sm: variants for markup; media queries —
+   here and in scoped styles — write the ranges out, with a comment naming
+   the tier) and the page container width (max-w-page). Static values, so
+   they live in a plain @theme block — media queries can't read CSS
+   variables. */
 @theme {
   --breakpoint-tablet: 900px;
   --breakpoint-phone: 700px;
@@ -78,11 +84,33 @@
   }
 }
 
-/* Section fills the viewport under the header. svh: equals vh on desktop,
-   and stays stable on mobile when the browser chrome collapses (dvh would
-   resize the section mid-scroll). */
+/* A section's outer box: page-width, centered, filling the viewport under
+   the header. svh: equals vh on desktop, and stays stable on mobile when the
+   browser chrome collapses (dvh would resize the section mid-scroll). */
 @utility section-screen {
   min-height: calc(100svh - var(--headerH));
+  margin-inline: auto;
+  max-width: var(--container-page);
+}
+
+/* A section's evenly-distributed content list, inset by the shared gutter.
+   Stretches inside the flex column its consumer's section shell provides. */
+@utility section-list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding-inline: var(--gutter);
+}
+
+/* Flat-bottom scroll-cue rhythm for in-flow sections (an absolutely-
+   positioned cue like Hero's opts out). 700 is --breakpoint-phone. */
+@utility section-cue {
+  padding-inline: var(--gutter);
+  padding-block: 22px;
+  @media (width < 700px) {
+    padding-block: 14px 24px;
+  }
 }
 
 @layer base {
@@ -110,8 +138,12 @@
     color: var(--ink);
     text-decoration: none;
   }
-  a:hover {
-    color: var(--accent-text);
+  /* No sticky hover on touch — the same gate Tailwind compiles around its
+     hover: variants. */
+  @media (hover: hover) {
+    a:hover {
+      color: var(--accent-text);
+    }
   }
   ::selection {
     background: var(--accent);

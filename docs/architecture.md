@@ -16,6 +16,7 @@ src/
     ScrollCue.astro       Shared "Scroll Down" link (each section's cue)
     Hero.astro            Page section
     Experience.astro      Page section
+    Blog.astro            Page section
   styles/global.css       Design tokens, Tailwind setup, base styles
   lib/theme.ts            Theme storage-key / attribute constants
   assets/                 Images processed by astro:assets
@@ -24,20 +25,22 @@ public/                   Files served verbatim (favicons, _headers)
 
 ## Page composition
 
-`index.astro` is the only page. It composes `Base` → `Header` → one component per page section, in scroll order — and passes each section its scroll-cue target (`nextHref`), so section order is knowledge only the page holds.
+`index.astro` is the only page. It composes `Base` → `Header` → one component per page section, in scroll order — and passes each section its scroll-cue target (`nextHref`), so section order is knowledge only the page holds. During the build-out, the last section's `nextHref` may point at a section that doesn't exist yet — a fragment link with no matching element is inert, and the Header's highlight script already skips missing sections.
 
 Ownership boundaries:
 
 - **`Base.astro`** owns the document: metadata, the Fonts API setup, and the inline pre-paint script that applies the stored theme before first paint.
 - **`Header.astro`** owns everything header-shaped: the nav links (the page's table of contents — sections declare their own `id`s, and the highlight script skips links whose section doesn't exist yet), the measured `--headerH` custom property that `section-screen` heights and the anchor-scroll offset depend on, and the scroll-driven active-link highlight.
-- **Section components** are self-contained: markup, section-scoped styles, behavior, and content live in one file. Section content is a typed const in the component's frontmatter — with a single consumer and a handful of entries, colocated data beats indirection. Content collections are reserved for genuinely repeating content (the blog).
-- **Shared components** are extracted only when duplication is proven in the design source, not anticipated. `SectionIntro` exists because the Experiences and Blog intros are identical in the design down to their responsive tiers; `BookCallCta` because the header and section intros carry the same CTA; `ScrollCue` because every section ends in the same cue. Per-consumer variation enters through props (e.g. `condensed`, `class`), never by reaching into the component from outside — placement styling (`.hero-scroll`, `.exp-cue`) lives on a wrapper the consumer owns, since the default `scopedStyleStrategy` doesn't carry a parent's scope into a child component anyway.
+- **Section components** are self-contained: markup, section-scoped styles, behavior, and content live in one file. Section content is a typed const in the component's frontmatter — with a single consumer and a handful of entries, colocated data beats indirection. Content collections are reserved for genuinely repeating content (future blog article pages — the homepage blog section is a typed const like every other section).
+- **Shared components** are extracted only when duplication is proven in the design source, not anticipated. `SectionIntro` exists because the Experiences and Blog intros are identical in the design down to their responsive tiers; `BookCallCta` because the header and section intros carry the same CTA; `ScrollCue` because every section ends in the same cue. Per-consumer variation enters through props (e.g. `condensed`, `class`), never by reaching into the component from outside — placement styling (`.hero-scroll`) and consumer tier overrides (`.exp-cue`) live on a wrapper the consumer owns, since the default `scopedStyleStrategy` doesn't carry a parent's scope into a child component anyway.
 
 ## Styling policy
 
 One invariant carries the whole styling system:
 
-> Markup classes are width-invariant Tailwind utilities only. Every property that changes across responsive tiers lives in the component's scoped `<style>`, written as plain range media queries.
+> Markup classes are width-invariant Tailwind utilities only. Every property that changes across responsive tiers lives in the component's scoped `<style>`, written as plain range media queries — unless the whole rule is system-owned in `global.css` (the shared section rhythm below), in which case its tier steps live there with it.
+
+State follows the same split: single-element state stays in markup as variants (Experience's `hover:border-accent-text`), while relational state — a parent's hover driving descendants, like Blog's rows — lives in the scoped `<style>`, where utilities could only express it by adding `group` plumbing to the markup.
 
 Two facts force this split:
 
@@ -46,12 +49,12 @@ Two facts force this split:
 
 Design tokens are defined once in `global.css` and exposed as Tailwind utilities via `@theme inline` (values and roles are tabled in [design.md](design.md)). Named breakpoint variants (`max-tablet:`, `max-phone:`, `max-phone-sm:`) exist for markup; media-query literals in scoped styles carry a comment naming the tier they belong to.
 
-Two layout values are system-owned in `global.css` rather than re-encoded per component: the responsive `--gutter` custom property (the shared section gutter — conditions can't read variables, but declarations can) and the `section-screen` utility (a section that fills the viewport under the header).
+Four layout primitives are system-owned in `global.css` rather than re-encoded per component: the responsive `--gutter` custom property (the shared section gutter — conditions can't read variables, but declarations can), the `section-screen` utility (a section's outer box — page-width, centered, filling the viewport under the header), the `section-list` utility (a section's evenly-distributed content list, inset by the gutter), and the `section-cue` utility (the flat-bottom scroll-cue rhythm for in-flow sections; an absolutely-positioned cue opts out).
 
 ## Theming
 
 - Light is the default; dark is the `data-theme="dark"` attribute on `<html>`. The attribute name and storage key are constants in `lib/theme.ts`; `global.css` co-owns the values (its dark variant and token block hard-code the attribute), and both files say so.
-- The theme-flip fade is temporal: `ThemeToggle` puts `.theme-switching` on the root only for the duration of a toggle, so the 260ms color transition runs exactly then — hovers stay instant and the first paint can't flash.
+- The theme-flip fade is temporal: `ThemeToggle` puts `.theme-switching` on the root only for the duration of a toggle, so the 500ms color transition runs exactly then — hovers stay instant and the first paint can't flash.
 - Reduced motion: smooth anchor scrolling opts out via `prefers-reduced-motion` (a page-length scroll is large motion); the small transitions — theme fade, read-more expand, nav highlight — do not.
 
 ## Client JavaScript
@@ -74,6 +77,7 @@ Choices a reviewer might question, and why they went this way:
 - **`aria-current="location"` for the active nav link** — the semantically correct signal for "current place in the page", and the styling hook, in one attribute; a `data-` attribute would duplicate state assistive tech can't see.
 - **Unprefixed `mask-image` only** — the build's CSS minifier strips `-webkit-` prefixes per its Baseline browser targets, so authoring them would be dead source; pre-Baseline browsers lose only a cosmetic fade, never the content clamp.
 - **Design-file dead code is not ported** — the design's pill-balancing script (guard condition can never hold) and its 640px article rule (fully shadowed by a later block) are provably inert, so the implementation omits them rather than shipping code that never runs.
+- **Blog rows are non-link `<article>`s** — the design marks them up as anchors, but their `href="#blog"` self-reference is a dead link: a focusable tab stop with no destination that would scroll-jump on click. The hover treatment and pointer cursor stay deliberately — design fidelity carried ahead of the real links; the rows become real `<a>` links when article pages exist.
 - **Color literals that shadow tokens become tokens** — e.g. the design's hard-coded article hairline is `border-hair` here, so dark mode keeps a visible border.
 
 ## Keeping this current

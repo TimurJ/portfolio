@@ -64,17 +64,14 @@ const { nextHref } = Astro.props;
 const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
 ---
 
-<section
-  id="experience"
-  class="section-screen mx-auto flex max-w-page flex-col"
->
+<section id="experience" class="section-screen flex flex-col">
   <SectionIntro
     condensed
     eyebrow="Experiences"
     title="Explore My Engineering Journey"
     blurb="Five years building trading systems, from a multi-dealer RFQ platform for government bonds and repo at CME Group to a greenfield energy-commodities terminal I now own end to end."
   />
-  <div class="exp-list flex flex-1 flex-col justify-evenly">
+  <div class="section-list">
     {
       experiences.map(({ company, subtitle, meta, description, pills }) => (
         <article class="exp-row grid items-start border-b border-hair">
@@ -123,7 +120,7 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
       ))
     }
   </div>
-  <div class="exp-cue">
+  <div class="section-cue exp-cue">
     <ScrollCue href={nextHref} />
   </div>
 </section>
@@ -133,9 +130,6 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
      1100/1000 are this section's design tiers, 700/460 are
      --breakpoint-phone/--breakpoint-phone-sm written out. */
 
-  .exp-list {
-    padding-inline: var(--gutter);
-  }
   .exp-row {
     grid-template-columns: minmax(0, 10fr) minmax(0, 12fr) minmax(0, 9fr);
     gap: 24px 50px;
@@ -184,11 +178,6 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
   .exp-row[data-open] .label-less {
     display: inline;
   }
-  .exp-cue {
-    padding-inline: var(--gutter);
-    padding-block: 22px;
-  }
-
   /* Tablet: tighter rows, smaller type and pills. */
   @media (width < 1100px) {
     .exp-row {
@@ -261,9 +250,6 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
     }
     .exp-row[data-open] .read-more svg {
       transform: rotate(180deg);
-    }
-    .exp-cue {
-      padding-block: 14px 24px;
     }
   }
 
