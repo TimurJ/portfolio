@@ -1,0 +1,4 @@
+# Everything under /_astro/ is content-hashed by the build, so it can be
+# cached forever; HTML keeps the platform default (max-age=0, must-revalidate).
+/_astro/*
+  Cache-Control: public, max-age=31556952, immutable

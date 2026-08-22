@@ -1,0 +1,116 @@
+---
+import BookCallCta from "./BookCallCta.astro";
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  blurb: string;
+  /** Tightens the intro below 460px, for sections that must fit one phone screen. */
+  condensed?: boolean;
+}
+
+const { eyebrow, title, blurb, condensed = false } = Astro.props;
+---
+
+<div class:list={["intro grid", { condensed }]}>
+  <div class="flex flex-col gap-[18px]">
+    <span
+      class="inline-flex items-center gap-2.5 text-[11px] tracking-[0.12em] text-accent-text uppercase"
+    >
+      <span class="size-2 rounded-full bg-dot"></span>{eyebrow}
+    </span>
+    <h2
+      class="intro-title max-w-[15ch] leading-[1.05] font-normal tracking-[-0.03em]"
+    >
+      {title}
+    </h2>
+  </div>
+  <div class="intro-aside flex flex-col self-start">
+    <p class="intro-blurb max-w-[42ch] text-pretty text-muted">{blurb}</p>
+    <BookCallCta class="self-start" />
+  </div>
+</div>
+
+<style>
+  /* Per-tier rules live here per the styling policy (docs/architecture.md);
+     1100/400 are this intro's design tiers, 700/460 are
+     --breakpoint-phone/--breakpoint-phone-sm written out. */
+
+  .intro {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 40px;
+    padding: clamp(20px, 4vh, 44px) var(--gutter) clamp(24px, 4.5vh, 52px);
+  }
+  .intro-title {
+    font-size: clamp(28px, 4.4vh, 50px);
+  }
+  .intro-aside {
+    justify-self: end;
+    gap: 22px;
+    margin-top: 34px;
+  }
+  .intro-blurb {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* Tablet: even column split, tighter spacing and type. */
+  @media (width < 1100px) {
+    .intro {
+      grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+      gap: 28px;
+      padding: 20px var(--gutter) 22px;
+    }
+    .intro-title {
+      font-size: 38px;
+    }
+    .intro-aside {
+      gap: 14px;
+      margin-top: 26px;
+    }
+    .intro-blurb {
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+  }
+
+  /* Phone: the intro condenses so the section header stays compact. */
+  @media (width < 700px) {
+    .intro {
+      gap: 12px;
+      padding: 14px var(--gutter) 16px;
+    }
+    .intro-title {
+      font-size: 28px;
+    }
+    .intro-aside {
+      gap: 10px;
+      margin-top: 0;
+    }
+    .intro-blurb {
+      font-size: 13px;
+      line-height: 1.45;
+    }
+  }
+
+  /* Opt-in tightening for sections that must fit one small-phone screen. */
+  @media (width < 460px) {
+    .intro.condensed {
+      gap: 10px;
+      padding: 12px var(--gutter) 14px;
+    }
+    .intro.condensed .intro-title {
+      font-size: 26px;
+    }
+  }
+
+  /* Narrowest phones: stack the blurb under the heading. */
+  @media (width < 400px) {
+    .intro {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .intro-aside {
+      justify-self: start;
+    }
+  }
+</style>

@@ -2,6 +2,14 @@
 import { Image } from "astro:assets";
 
 import portrait from "../assets/portrait-bw.png";
+import ScrollCue from "./ScrollCue.astro";
+
+interface Props {
+  /** Scroll-cue target: the next section, owned by the page's composition. */
+  nextHref: string;
+}
+
+const { nextHref } = Astro.props;
 
 const stats = [
   { value: "+05", label: "Years in finance" },
@@ -12,7 +20,7 @@ const railLabelClass =
   "rotate-180 text-[11px] tracking-[0.14em] text-muted [writing-mode:vertical-rl]";
 ---
 
-<section id="hero" class="hero mx-auto grid max-w-page">
+<section id="hero" class="hero section-screen mx-auto grid max-w-page">
   <div class="hero-left grid">
     <div class="hero-rail flex flex-col items-center gap-6 py-7">
       <span class={railLabelClass}>Senior Frontend Engineer</span>
@@ -47,9 +55,9 @@ const railLabelClass =
           </p>
         </div>
       </div>
-      <a href="#experience" class="hero-scroll text-[13px] text-muted">
-        Scroll Down ↓
-      </a>
+      <div class="hero-scroll">
+        <ScrollCue href={nextHref} />
+      </div>
     </div>
   </div>
   <div class="hero-media relative">
@@ -65,21 +73,11 @@ const railLabelClass =
 </section>
 
 <style>
-  /* The hero's layout composition changes shape per tier (elements switch
-     positioning mode and anchor), so it lives here as cascade rules; the
-     markup utilities cover everything that is the same at every width.
-
-     The 900/700 values are --breakpoint-tablet/--breakpoint-phone from
-     global.css, written out because media queries can't read CSS variables,
-     and Astro's scoped-style compiler doesn't process selectors inside
-     `@variant` blocks (scoping and :global() are left unapplied). Range
-     syntax matches the strict `<` the max-* variants compile to. */
+  /* Per-tier rules live here per the styling policy (docs/architecture.md);
+     900/700 are --breakpoint-tablet/--breakpoint-phone written out. */
 
   .hero {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
-    /* svh: equals vh on desktop, and stays stable on mobile when the
-       browser chrome collapses (dvh would resize the hero mid-scroll). */
-    min-height: calc(100svh - var(--headerH));
   }
   .hero-left {
     grid-template-columns: 46px 1fr;
@@ -190,25 +188,25 @@ const railLabelClass =
     .hero {
       position: relative;
       grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: auto minmax(0, 1fr);
-      padding-bottom: 152px;
+      grid-template-rows: auto auto;
+      padding-bottom: 124px;
     }
     .hero-copy {
-      padding: 10px 20px 12px;
+      padding: 10px var(--gutter) 12px;
     }
     .hero-center {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
     }
     .hero-title {
       font-size: clamp(36px, 13vw, 58px);
     }
     .hero-stats {
       position: absolute;
-      right: 20px;
-      bottom: 64px;
-      left: 20px;
+      right: var(--gutter);
+      bottom: 52px;
+      left: var(--gutter);
       align-items: flex-end;
     }
     .stat-num {
@@ -216,12 +214,15 @@ const railLabelClass =
     }
     .hero-scroll {
       position: absolute;
-      bottom: 24px;
-      left: 20px;
+      bottom: 16px;
+      left: var(--gutter);
     }
     .hero-media {
-      min-height: 74vw;
-      margin: 18px 0 26px;
+      /* Fixed ratio so the box is viewport-independent (real-phone svh differs
+         from devtools emulation); 7:8 matches the intended full-screen framing. */
+      aspect-ratio: 7 / 8;
+      min-height: 0;
+      margin: 12px 0;
     }
     .hero-media :global(img) {
       object-position: 50% 18%;

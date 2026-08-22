@@ -10,6 +10,8 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 
 ## Documentation
 
+`docs/architecture.md` documents the project structure — update it in the same PR as any change to component boundaries, styling policy, or client scripts.
+
 Full documentation: https://docs.astro.build
 
 Consult these guides before working on related tasks:

@@ -1,0 +1,81 @@
+# Architecture
+
+A one-page static site: Astro renders everything to HTML at build time, and the client ships no framework — just a few small vanilla scripts, each owned by the component whose markup it drives. There is no adapter and no server code; the output deploys as static assets (see [deploying.md](deploying.md)). Rendering fidelity is specified by the design file, not by this doc (see [design.md](design.md)).
+
+## Layout
+
+```
+src/
+  pages/index.astro       The page: assembles the layout, header, and sections
+  layouts/Base.astro      <head>, fonts, and the pre-paint theme script
+  components/
+    Header.astro          Sticky nav; owns --headerH and the active-link highlight
+    ThemeToggle.astro     Light/dark switch
+    SectionIntro.astro    Shared section header (eyebrow, title, blurb, CTA)
+    BookCallCta.astro     Shared "Book A Call" link (header + section intros)
+    ScrollCue.astro       Shared "Scroll Down" link (each section's cue)
+    Hero.astro            Page section
+    Experience.astro      Page section
+  styles/global.css       Design tokens, Tailwind setup, base styles
+  lib/theme.ts            Theme storage-key / attribute constants
+  assets/                 Images processed by astro:assets
+public/                   Files served verbatim (favicons, _headers)
+```
+
+## Page composition
+
+`index.astro` is the only page. It composes `Base` → `Header` → one component per page section, in scroll order — and passes each section its scroll-cue target (`nextHref`), so section order is knowledge only the page holds.
+
+Ownership boundaries:
+
+- **`Base.astro`** owns the document: metadata, the Fonts API setup, and the inline pre-paint script that applies the stored theme before first paint.
+- **`Header.astro`** owns everything header-shaped: the nav links (the page's table of contents — sections declare their own `id`s, and the highlight script skips links whose section doesn't exist yet), the measured `--headerH` custom property that `section-screen` heights and the anchor-scroll offset depend on, and the scroll-driven active-link highlight.
+- **Section components** are self-contained: markup, section-scoped styles, behavior, and content live in one file. Section content is a typed const in the component's frontmatter — with a single consumer and a handful of entries, colocated data beats indirection. Content collections are reserved for genuinely repeating content (the blog).
+- **Shared components** are extracted only when duplication is proven in the design source, not anticipated. `SectionIntro` exists because the Experiences and Blog intros are identical in the design down to their responsive tiers; `BookCallCta` because the header and section intros carry the same CTA; `ScrollCue` because every section ends in the same cue. Per-consumer variation enters through props (e.g. `condensed`, `class`), never by reaching into the component from outside — placement styling (`.hero-scroll`, `.exp-cue`) lives on a wrapper the consumer owns, since the default `scopedStyleStrategy` doesn't carry a parent's scope into a child component anyway.
+
+## Styling policy
+
+One invariant carries the whole styling system:
+
+> Markup classes are width-invariant Tailwind utilities only. Every property that changes across responsive tiers lives in the component's scoped `<style>`, written as plain range media queries.
+
+Two facts force this split:
+
+- Astro's scoped-style compiler does not process selectors inside Tailwind `@variant` blocks — rules there lose their scoping attribute and `:global()` is left unstripped — so scoped styles cannot use Tailwind's responsive variants.
+- The breakpoint tokens in `global.css` compile to strict `width <` media queries, so the scoped blocks use the same range syntax (`(width < 900px)`, `(700px <= width < 900px)`) to keep both halves of the system agreeing at the boundary.
+
+Design tokens are defined once in `global.css` and exposed as Tailwind utilities via `@theme inline` (values and roles are tabled in [design.md](design.md)). Named breakpoint variants (`max-tablet:`, `max-phone:`, `max-phone-sm:`) exist for markup; media-query literals in scoped styles carry a comment naming the tier they belong to.
+
+Two layout values are system-owned in `global.css` rather than re-encoded per component: the responsive `--gutter` custom property (the shared section gutter — conditions can't read variables, but declarations can) and the `section-screen` utility (a section that fills the viewport under the header).
+
+## Theming
+
+- Light is the default; dark is the `data-theme="dark"` attribute on `<html>`. The attribute name and storage key are constants in `lib/theme.ts`; `global.css` co-owns the values (its dark variant and token block hard-code the attribute), and both files say so.
+- The theme-flip fade is temporal: `ThemeToggle` puts `.theme-switching` on the root only for the duration of a toggle, so the 260ms color transition runs exactly then — hovers stay instant and the first paint can't flash.
+- Reduced motion: smooth anchor scrolling opts out via `prefers-reduced-motion` (a page-length scroll is large motion); the small transitions — theme fade, read-more expand, nav highlight — do not.
+
+## Client JavaScript
+
+Behavior is colocated: each component carries its own `<script>`, which Astro bundles as a deferred module and dedupes across uses — scripts run once, after the document is parsed, with no ready-state wrappers. The one exception is deliberate: the theme init in `Base.astro` is `is:inline` because it must run before first paint.
+
+| Script                | Responsibility                                                                                                                                                                                      |
+| :-------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Base.astro` (inline) | Apply the stored theme to `<html>` before first paint                                                                                                                                               |
+| `Header.astro`        | Measure the header into `--headerH` (ResizeObserver); sync the active nav link on scroll, with a short lock on in-page anchor clicks (nav links and scroll cues) so the highlight moves immediately |
+| `ThemeToggle.astro`   | Flip `data-theme`, persist the choice, run the temporal fade                                                                                                                                        |
+| `Experience.astro`    | Read-more expand/collapse on the phone tier, animating through an explicit pixel height                                                                                                             |
+
+## Decisions
+
+Choices a reviewer might question, and why they went this way:
+
+- **`svh` for section heights** — equals `vh` on desktop and stays stable on mobile when the browser chrome collapses; `dvh` would resize sections mid-scroll.
+- **`lh` for the read-more clamp** — `3lh` derives "three lines" from the element's real line-height instead of encoding it a second time; browsers below the unit's floor (older than the mask-image floor below) simply don't clamp.
+- **`aria-current="location"` for the active nav link** — the semantically correct signal for "current place in the page", and the styling hook, in one attribute; a `data-` attribute would duplicate state assistive tech can't see.
+- **Unprefixed `mask-image` only** — the build's CSS minifier strips `-webkit-` prefixes per its Baseline browser targets, so authoring them would be dead source; pre-Baseline browsers lose only a cosmetic fade, never the content clamp.
+- **Design-file dead code is not ported** — the design's pill-balancing script (guard condition can never hold) and its 640px article rule (fully shadowed by a later block) are provably inert, so the implementation omits them rather than shipping code that never runs.
+- **Color literals that shadow tokens become tokens** — e.g. the design's hard-coded article hairline is `border-hair` here, so dark mode keeps a visible border.
+
+## Keeping this current
+
+This doc changes in the same PR as any change to component boundaries, styling policy, or client scripts — it describes the system as built, never as planned.

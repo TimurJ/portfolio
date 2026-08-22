@@ -1,0 +1,324 @@
+---
+import ScrollCue from "./ScrollCue.astro";
+import SectionIntro from "./SectionIntro.astro";
+
+interface Props {
+  /** Scroll-cue target: the next section, owned by the page's composition. */
+  nextHref: string;
+}
+
+type ExperienceEntry = {
+  company: string;
+  subtitle?: string;
+  meta: string[];
+  description: string;
+  pills: string[];
+};
+
+const experiences: ExperienceEntry[] = [
+  {
+    company: "Onyx Capital Group",
+    meta: ["2026 — Present", "UK, London"],
+    description:
+      "Own the frontend of an energy-commodities trading platform. I made the case to the CTO for a greenfield rebuild over an in-place upgrade, secured board approval, and built the architecture and core trading surface solo: order entry, price ladder, blotters, market overview and real-time charting. The team behind it went from one engineer to four, and I lead it.",
+    pills: [
+      "React",
+      "TypeScript",
+      "WebSocket",
+      "Vite",
+      "TanStack Query & Router",
+      "Tailwind",
+      "shadcn/ui",
+      "AG Grid",
+      "TradingView",
+      "Vitest",
+      "Playwright",
+      "RTL",
+    ],
+  },
+  {
+    company: "Adaptive Financial Consulting",
+    subtitle: "(Contracted to CME Group)",
+    meta: ["2021 — 2025", "UK, London"],
+    description:
+      "Contracted to CME Group for the full engagement, building BrokerTec Quote, a multi-dealer RFQ platform for government bonds and repo. Built the real-time negotiation workflows, pricing grids and trade blotters, with live updates over WebSocket, and partnered with backend teams on API design for latency and fault tolerance. Supported live releases in a high-stakes trading environment, triaging issues in real time with the client.",
+    pills: [
+      "React",
+      "TypeScript",
+      "Redux",
+      "RxJS",
+      "WebSocket",
+      "AG Grid",
+      "Material UI",
+      "Styled Components",
+      "Jest",
+      "RTL",
+      "Cypress",
+      "Playwright",
+    ],
+  },
+];
+
+const { nextHref } = Astro.props;
+
+const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
+---
+
+<section
+  id="experience"
+  class="section-screen mx-auto flex max-w-page flex-col"
+>
+  <SectionIntro
+    condensed
+    eyebrow="Experiences"
+    title="Explore My Engineering Journey"
+    blurb="Five years building trading systems, from a multi-dealer RFQ platform for government bonds and repo at CME Group to a greenfield energy-commodities terminal I now own end to end."
+  />
+  <div class="exp-list flex flex-1 flex-col justify-evenly">
+    {
+      experiences.map(({ company, subtitle, meta, description, pills }) => (
+        <article class="exp-row grid items-start border-b border-hair">
+          <div class="exp-head flex flex-col">
+            <h3 class={nameClass}>{company}</h3>
+            {subtitle && <span class={nameClass}>{subtitle}</span>}
+            {meta.map((item) => (
+              <span class="exp-meta inline-flex items-center gap-[9px] text-muted">
+                <span class="size-1.5 flex-none rounded-full bg-dot" />
+                {item}
+              </span>
+            ))}
+          </div>
+          <div class="flex min-w-0 flex-col">
+            <p class="exp-desc text-pretty text-muted">{description}</p>
+            <button
+              type="button"
+              aria-expanded="false"
+              class="read-more my-2.5 cursor-pointer items-center gap-[7px] self-start border-b border-accent-text/40 pb-0.5 text-[13px] tracking-[0.02em] text-accent-text hover:border-accent-text"
+            >
+              <span class="label-more">Read more</span>
+              <span class="label-less">Show less</span>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+          </div>
+          <div class="exp-pills flex min-w-0 flex-wrap content-start">
+            {pills.map((pill) => (
+              <span class="pill rounded-full border border-line uppercase whitespace-nowrap">
+                {pill}
+              </span>
+            ))}
+          </div>
+        </article>
+      ))
+    }
+  </div>
+  <div class="exp-cue">
+    <ScrollCue href={nextHref} />
+  </div>
+</section>
+
+<style>
+  /* Per-tier rules live here per the styling policy (docs/architecture.md);
+     1100/1000 are this section's design tiers, 700/460 are
+     --breakpoint-phone/--breakpoint-phone-sm written out. */
+
+  .exp-list {
+    padding-inline: var(--gutter);
+  }
+  .exp-row {
+    grid-template-columns: minmax(0, 10fr) minmax(0, 12fr) minmax(0, 9fr);
+    gap: 24px 50px;
+    padding: clamp(28px, 5vh, 58px) 0;
+  }
+  .exp-head {
+    gap: 8px;
+  }
+  .exp-name {
+    font-size: clamp(20px, 2vw, 30px);
+  }
+  .exp-meta {
+    font-size: 13px;
+  }
+  .exp-desc {
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .exp-pills {
+    gap: 8px;
+  }
+  .pill {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    padding: 7px 12px;
+  }
+  .read-more {
+    /* Only the phone tier clamps the description, so only it shows the toggle. */
+    display: none;
+    transition:
+      color 350ms ease,
+      border-color 350ms ease;
+  }
+  .read-more svg {
+    transition: transform 650ms cubic-bezier(0.22, 0.8, 0.28, 1);
+  }
+  .read-more:active {
+    transform: scale(0.97);
+  }
+  .label-less {
+    display: none;
+  }
+  .exp-row[data-open] .label-more {
+    display: none;
+  }
+  .exp-row[data-open] .label-less {
+    display: inline;
+  }
+  .exp-cue {
+    padding-inline: var(--gutter);
+    padding-block: 22px;
+  }
+
+  /* Tablet: tighter rows, smaller type and pills. */
+  @media (width < 1100px) {
+    .exp-row {
+      padding: 16px 0;
+      gap: 12px 20px;
+    }
+    .exp-name {
+      font-size: 21px;
+    }
+    .exp-meta {
+      font-size: 12.5px;
+    }
+    .exp-desc {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .exp-pills {
+      gap: 6px;
+    }
+    .pill {
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      padding: 5px 10px;
+    }
+  }
+
+  /* Narrow tablet: pills drop to a full-width row of their own. */
+  @media (width < 1000px) {
+    .exp-row {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .exp-pills {
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* Phone: single-column rows; the description clamps to three lines with a
+     bottom fade, and the read-more toggle animates it open. */
+  @media (width < 700px) {
+    .exp-row {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
+      padding: 14px 0;
+    }
+    .exp-name {
+      font-size: 19px;
+    }
+    .exp-desc {
+      font-size: 13px;
+      /* lh derives the three-line clamp from the element's real line-height
+         (its floor sits below the mask-image floor accepted below). */
+      max-height: 3lh;
+      overflow: hidden;
+      transition: max-height 650ms cubic-bezier(0.22, 0.8, 0.28, 1);
+      /* Unprefixed per the build's Baseline browser targets (the minifier
+         strips -webkit-mask-image); pre-Baseline Chromium only loses the
+         fade — the clamp itself is max-height/overflow. */
+      mask-image: linear-gradient(
+        180deg,
+        #000 calc(100% - 14px),
+        transparent 100%
+      );
+    }
+    .exp-row[data-open] .exp-desc {
+      max-height: none;
+      mask-image: none;
+    }
+    .read-more {
+      display: inline-flex;
+    }
+    .exp-row[data-open] .read-more svg {
+      transform: rotate(180deg);
+    }
+    .exp-cue {
+      padding-block: 14px 24px;
+    }
+  }
+
+  /* Small phones: fit the section into one screen. */
+  @media (width < 460px) {
+    .exp-row {
+      gap: 8px;
+      padding: 12px 0;
+    }
+    .exp-head {
+      gap: 4px;
+    }
+    .exp-name {
+      font-size: 18px;
+    }
+    .pill {
+      padding: 4px 10px;
+    }
+    .exp-pills {
+      gap: 5px;
+    }
+    .exp-cue {
+      padding-block: 10px 24px;
+    }
+  }
+</style>
+
+<script>
+  /* The phone tier clamps each description with a CSS max-height, and
+     max-height: none can't transition — so both directions pass through an
+     explicit pixel height: expand sets it, then clears it once the transition
+     lands; collapse sets it, then clears it next frame so the CSS clamp value
+     becomes the transition target. */
+  document.querySelectorAll<HTMLElement>(".exp-row").forEach((row) => {
+    const button = row.querySelector<HTMLButtonElement>(".read-more");
+    const description = row.querySelector<HTMLParagraphElement>(".exp-desc");
+    if (!button || !description) return;
+    button.addEventListener("click", () => {
+      const willOpen = !row.hasAttribute("data-open");
+      description.style.maxHeight = `${description.scrollHeight}px`;
+      if (willOpen) {
+        description.addEventListener(
+          "transitionend",
+          () => {
+            description.style.maxHeight = "";
+          },
+          { once: true },
+        );
+      } else {
+        requestAnimationFrame(() => {
+          description.style.maxHeight = "";
+        });
+      }
+      row.toggleAttribute("data-open", willOpen);
+      button.setAttribute("aria-expanded", String(willOpen));
+    });
+  });
+</script>
