@@ -34,7 +34,6 @@
   --accent: #d80000;
   --accent-text: #b40000;
   --dot: #d80000;
-  --img: grayscale(1) contrast(1.05);
   /* Dim levels for text on the inverted footer panel (bg-ink). Dark mode
      lifts them: the panel turns light there, and 50% ink on it falls to
      ~3.5:1 contrast. */
@@ -72,12 +71,13 @@
 }
 
 /* Layout constants from the design: the responsive tiers (exposed as
-   max-tablet:/max-phone:/max-phone-sm: variants for markup; media queries —
-   here and in scoped styles — write the ranges out, with a comment naming
-   the tier) and the page container width (max-w-page). Static values, so
-   they live in a plain @theme block — media queries can't read CSS
-   variables. */
+   max-laptop:/max-tablet:/max-phone:/max-phone-sm: variants for markup;
+   media queries — here and in scoped styles — write the ranges out, with a
+   comment naming the tier) and the page container width (max-w-page).
+   Static values, so they live in a plain @theme block — media queries can't
+   read CSS variables. */
 @theme {
+  --breakpoint-laptop: 1100px;
   --breakpoint-tablet: 900px;
   --breakpoint-phone: 700px;
   --breakpoint-phone-sm: 460px;
@@ -129,6 +129,14 @@
   }
 }
 
+/* Theme-flip fade duration. ThemeToggle.astro co-owns this value: its
+   cleanup timeout reads it and adds a settle margin, so script and CSS can't
+   drift. A deliberate deviation from the design's ~260ms (see
+   docs/architecture.md, Decisions). */
+:root {
+  --theme-fade: 500ms;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -175,9 +183,9 @@
   html.theme-switching body,
   html.theme-switching body * {
     transition:
-      background-color 500ms ease,
-      color 500ms ease,
-      border-color 500ms ease,
-      outline-color 500ms ease;
+      background-color var(--theme-fade) ease,
+      color var(--theme-fade) ease,
+      border-color var(--theme-fade) ease,
+      outline-color var(--theme-fade) ease;
   }
 }

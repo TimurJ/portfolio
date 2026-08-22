@@ -1,14 +1,19 @@
 ---
-import { navLinks } from "../lib/nav";
+import { hrefOf, sections } from "../lib/nav";
 import { email } from "../lib/site";
+
+type FooterLink = {
+  href: string;
+  label: string;
+};
 
 const mailto = `mailto:${email}`;
 const year = new Date().getFullYear();
 
 // The footer doesn't link to the section it closes the page with.
-const footerNav = navLinks.filter(({ href }) => href !== "#contact");
+const footerNav = sections.filter(({ id }) => id !== "contact");
 
-const elsewhere = [
+const elsewhere: FooterLink[] = [
   { href: "https://github.com/TimurJ", label: "GitHub ↗" },
   { href: "https://www.linkedin.com/in/timur-jalilov/", label: "LinkedIn ↗" },
 ];
@@ -32,8 +37,8 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
       <div class="flex flex-col gap-3.5">
         <span class={footerLabelClass}>Navigate</span>
         {
-          footerNav.map(({ href, label }) => (
-            <a href={href} class={footerLinkClass}>
+          footerNav.map(({ id, label }) => (
+            <a href={hrefOf(id)} class={footerLinkClass}>
               {label}
             </a>
           ))
@@ -76,8 +81,8 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
 
 <style>
   /* Per-tier rules live here per the styling policy (docs/architecture.md);
-     410 is this footer's design tier, 700 is --breakpoint-phone written
-     out. */
+     1100/700 are --breakpoint-laptop/--breakpoint-phone written out; 410 is
+     this footer's own narrowest tier. */
 
   .footer-inner {
     padding: clamp(32px, 5vh, 56px) var(--gutter) clamp(20px, 3vh, 30px);
@@ -107,7 +112,7 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
     display: none;
   }
 
-  /* Tablet: three-column footer, viewport-scaled email. */
+  /* Laptop: three-column footer, viewport-scaled email. */
   @media (width < 1100px) {
     .footer-cols {
       grid-template-columns: repeat(3, minmax(0, 1fr));

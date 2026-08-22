@@ -2,16 +2,23 @@
 import { Image } from "astro:assets";
 
 import portrait from "../assets/portrait-bw.png";
+import { type SectionHref, type SectionId } from "../lib/nav";
 import ScrollCue from "./ScrollCue.astro";
 
 interface Props {
   /** Scroll-cue target: the next section, owned by the page's composition. */
-  nextHref: string;
+  nextHref: SectionHref;
 }
 
+type Stat = {
+  value: string;
+  label: string;
+};
+
+const sectionId: SectionId = "hero";
 const { nextHref } = Astro.props;
 
-const stats = [
+const stats: Stat[] = [
   { value: "+05", label: "Years in finance" },
   { value: "+03", label: "Products in production" },
 ];
@@ -20,7 +27,7 @@ const railLabelClass =
   "rotate-180 text-[11px] tracking-[0.14em] text-muted [writing-mode:vertical-rl]";
 ---
 
-<section id="hero" class="hero section-screen mx-auto grid max-w-page">
+<section id={sectionId} class="hero section-screen mx-auto grid max-w-page">
   <div class="hero-left grid">
     <div class="hero-rail flex flex-col items-center gap-6 py-7">
       <span class={railLabelClass}>Senior Frontend Engineer</span>

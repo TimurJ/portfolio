@@ -1,5 +1,5 @@
 ---
-import { navLinks } from "../lib/nav";
+import { hrefOf, sections } from "../lib/nav";
 import BookCallCta from "./BookCallCta.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 ---
@@ -13,8 +13,8 @@ import ThemeToggle from "./ThemeToggle.astro";
     class="flex flex-wrap items-center gap-[26px] text-[13px] phone:max-tablet:text-[12px] max-tablet:gap-[18px] max-phone:gap-4 max-phone-sm:flex-nowrap max-phone-sm:gap-3.5 max-phone-sm:text-[12px]"
   >
     {
-      navLinks.map(({ href, label }) => (
-        <a href={href} class="border-b border-transparent pb-0.5">
+      sections.map(({ id, label }) => (
+        <a href={hrefOf(id)} class="border-b border-transparent pb-0.5">
           {label}
         </a>
       ))
@@ -49,13 +49,13 @@ import ThemeToggle from "./ThemeToggle.astro";
        whose box spans the point just below the header. Sections that aren't
        built yet simply never match. Links are tracked by their #hash — the
        one identity a link and its section share. */
-    const navLinks = [
+    const navTargets = [
       ...header.querySelectorAll<HTMLAnchorElement>('nav a[href^="#"]'),
     ].map((link) => ({
       link,
       section: document.getElementById(link.hash.slice(1)),
     }));
-    const defaultHash = navLinks[0]?.link.hash;
+    const defaultHash = navTargets[0]?.link.hash;
 
     let headerHeight = 0;
     let lockedHash: string | null = null;
@@ -68,7 +68,7 @@ import ThemeToggle from "./ThemeToggle.astro";
         const probeY = headerHeight + 8;
         /* Last section whose top has passed the probe wins — so scrolling
            into the footer (below the last section) keeps Contact active. */
-        for (const { link, section } of navLinks) {
+        for (const { link, section } of navTargets) {
           if (!section) continue;
           if (section.getBoundingClientRect().top <= probeY) {
             activeHash = link.hash;
@@ -77,7 +77,7 @@ import ThemeToggle from "./ThemeToggle.astro";
       }
       if (activeHash === lastActive) return;
       lastActive = activeHash;
-      for (const { link } of navLinks) {
+      for (const { link } of navTargets) {
         if (link.hash === activeHash) {
           link.setAttribute("aria-current", "location");
         } else {

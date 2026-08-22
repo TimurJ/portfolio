@@ -1,10 +1,12 @@
 ---
+import { iconAttrs } from "../lib/icons";
+import { type SectionHref, type SectionId } from "../lib/nav";
 import ScrollCue from "./ScrollCue.astro";
 import SectionIntro from "./SectionIntro.astro";
 
 interface Props {
   /** Scroll-cue target: the next section, owned by the page's composition. */
-  nextHref: string;
+  nextHref: SectionHref;
 }
 
 type BlogEntry = {
@@ -38,10 +40,11 @@ const posts: BlogEntry[] = [
   },
 ];
 
+const sectionId: SectionId = "blog";
 const { nextHref } = Astro.props;
 ---
 
-<section id="blog" class="section-screen mx-auto flex max-w-page flex-col">
+<section id={sectionId} class="section-screen mx-auto flex max-w-page flex-col">
   <SectionIntro
     eyebrow="Blog"
     title="Explore My Blog"
@@ -69,18 +72,7 @@ const { nextHref } = Astro.props;
               Read article
             </span>
           </div>
-          <svg
-            class="blog-arrow"
-            width="30"
-            height="30"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.3"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
+          <svg class="blog-arrow" {...iconAttrs(30, 1.3)}>
             <path d="M7 17 17 7" />
             <path d="M8 7h9v9" />
           </svg>
@@ -95,8 +87,8 @@ const { nextHref } = Astro.props;
 
 <style>
   /* Per-tier rules live here per the styling policy (docs/architecture.md);
-     1100 is this section's design tier, 900/700 are
-     --breakpoint-tablet/--breakpoint-phone written out. */
+     1100/900/700 are --breakpoint-laptop/--breakpoint-tablet/
+     --breakpoint-phone written out. */
 
   .blog-row {
     grid-template-columns: minmax(0, 3fr) minmax(0, 10fr) auto;
@@ -144,7 +136,7 @@ const { nextHref } = Astro.props;
     }
   }
 
-  /* Tablet: tighter rows and type. */
+  /* Laptop: tighter rows and type. */
   @media (width < 1100px) {
     .blog-row {
       padding: 18px 0;

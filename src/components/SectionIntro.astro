@@ -7,12 +7,24 @@ interface Props {
   blurb: string;
   /** Tightens the intro below 460px, for sections that must fit one phone screen. */
   condensed?: boolean;
+  /** The page-closing CTA variant (Contact): roomier padding, larger centered
+      aside, single column from the phone tier. Never combined with condensed. */
+  closer?: boolean;
+  /** Extra utilities for the consumer's context (placement, sizing). */
+  class?: string;
 }
 
-const { eyebrow, title, blurb, condensed = false } = Astro.props;
+const {
+  eyebrow,
+  title,
+  blurb,
+  condensed = false,
+  closer = false,
+  class: className,
+} = Astro.props;
 ---
 
-<div class:list={["intro grid", { condensed }]}>
+<div class:list={["intro grid", { condensed, closer }, className]}>
   <div class="flex flex-col gap-[18px]">
     <span
       class="inline-flex items-center gap-2.5 text-[11px] tracking-[0.12em] text-accent-text uppercase"
@@ -25,16 +37,24 @@ const { eyebrow, title, blurb, condensed = false } = Astro.props;
       {title}
     </h2>
   </div>
-  <div class="intro-aside flex flex-col self-start">
+  <div
+    class:list={[
+      "intro-aside flex flex-col",
+      closer ? "self-center" : "self-start",
+    ]}
+  >
     <p class="intro-blurb max-w-[42ch] text-pretty text-muted">{blurb}</p>
-    <BookCallCta class="self-start" />
+    <slot name="cta"><BookCallCta class="self-start" /></slot>
   </div>
 </div>
 
 <style>
   /* Per-tier rules live here per the styling policy (docs/architecture.md);
-     1100/400 are this intro's design tiers, 700/460 are
-     --breakpoint-phone/--breakpoint-phone-sm written out. */
+     1100 is --breakpoint-laptop and 700/460 are
+     --breakpoint-phone/--breakpoint-phone-sm written out; 400 is this
+     intro's own narrowest tier. The .closer overrides win over the markup
+     utilities they replace because component styles are unlayered while
+     Tailwind's utilities are layered. */
 
   .intro {
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
@@ -53,8 +73,20 @@ const { eyebrow, title, blurb, condensed = false } = Astro.props;
     font-size: 15px;
     line-height: 1.6;
   }
+  .intro.closer {
+    padding: clamp(40px, 9vh, 110px) var(--gutter) clamp(40px, 8vh, 96px);
+  }
+  .closer .intro-title {
+    max-width: 14ch;
+    font-size: clamp(30px, 5.2vh, 58px);
+    line-height: 1.02;
+  }
+  .closer .intro-aside {
+    gap: 26px;
+    margin-top: 0;
+  }
 
-  /* Tablet: even column split, tighter spacing and type. */
+  /* Laptop: even column split, tighter spacing and type. */
   @media (width < 1100px) {
     .intro {
       grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
@@ -72,9 +104,20 @@ const { eyebrow, title, blurb, condensed = false } = Astro.props;
       font-size: 13.5px;
       line-height: 1.5;
     }
+    .intro.closer {
+      padding: 40px var(--gutter);
+    }
+    .closer .intro-title {
+      font-size: 40px;
+    }
+    .closer .intro-aside {
+      gap: 26px;
+      margin-top: 0;
+    }
   }
 
-  /* Phone: the intro condenses so the section header stays compact. */
+  /* Phone: the intro condenses so the section header stays compact; the
+     closer variant instead goes single-column and keeps its larger rhythm. */
   @media (width < 700px) {
     .intro {
       gap: 12px;
@@ -90,6 +133,22 @@ const { eyebrow, title, blurb, condensed = false } = Astro.props;
     .intro-blurb {
       font-size: 13px;
       line-height: 1.45;
+    }
+    .intro.closer {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 20px;
+      padding: 32px var(--gutter);
+    }
+    .closer .intro-title {
+      font-size: 30px;
+    }
+    .closer .intro-aside {
+      justify-self: start;
+      gap: 26px;
+    }
+    .closer .intro-blurb {
+      font-size: 13.5px;
+      line-height: 1.5;
     }
   }
 

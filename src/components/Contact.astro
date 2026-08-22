@@ -1,49 +1,35 @@
 ---
+import { type SectionId } from "../lib/nav";
 import { email } from "../lib/site";
+import SectionIntro from "./SectionIntro.astro";
 
+const sectionId: SectionId = "contact";
 const mailto = `mailto:${email}`;
 ---
 
-<section id="contact" class="contact-screen flex flex-col">
-  <div class="contact-cta mx-auto grid w-full max-w-page flex-1 content-center">
-    <div class="flex flex-col gap-[18px]">
-      <span
-        class="inline-flex items-center gap-2.5 text-[11px] tracking-[0.12em] text-accent-text uppercase"
+<section id={sectionId} class="contact-screen flex flex-col">
+  <SectionIntro
+    closer
+    class="mx-auto w-full max-w-page flex-1 content-center"
+    eyebrow="Contact"
+    title="Let's Start A Conversation"
+    blurb="Whether it's a question about the work here, a problem you're weighing up, or just a conversation worth having, my inbox is open. I read everything and reply within a couple of days."
+  >
+    <div class="flex flex-wrap items-center gap-6" slot="cta">
+      <a
+        href={mailto}
+        class="contact-btn inline-flex items-center gap-3 bg-accent px-[22px] py-3.5 text-[13px] tracking-[0.02em] text-white hover:bg-accent-text"
       >
-        <span class="size-2 rounded-full bg-dot"></span>Contact
-      </span>
-      <h2
-        class="contact-title max-w-[14ch] leading-[1.02] font-normal tracking-[-0.03em]"
-      >
-        Let's Start A Conversation
-      </h2>
+        Book A Call ↗
+      </a>
+      <a href={mailto} class="border-b border-line pb-0.5 text-[13px]">
+        Send An Email ↗
+      </a>
     </div>
-    <div class="contact-aside flex flex-col gap-[26px] self-center">
-      <p class="contact-blurb max-w-[42ch] text-pretty text-muted">
-        Whether it's a question about the work here, a problem you're weighing
-        up, or just a conversation worth having, my inbox is open. I read
-        everything and reply within a couple of days.
-      </p>
-      <div class="flex flex-wrap items-center gap-6">
-        <a
-          href={mailto}
-          class="contact-btn inline-flex items-center gap-3 bg-accent px-[22px] py-3.5 text-[13px] tracking-[0.02em] text-white hover:bg-accent-text"
-        >
-          Book A Call ↗
-        </a>
-        <a href={mailto} class="border-b border-line pb-0.5 text-[13px]">
-          Send An Email ↗
-        </a>
-      </div>
-    </div>
-  </div>
+  </SectionIntro>
 </section>
 
 <style>
-  /* Per-tier rules live here per the styling policy (docs/architecture.md);
-     1100 is this section's design tier, 700 is --breakpoint-phone written
-     out. */
-
   .contact-screen {
     /* The section and the site footer (a sibling of <main>, so it can be a
        contentinfo landmark) still share the final viewport: subtract the
@@ -51,55 +37,9 @@ const mailto = `mailto:${email}`;
        the header's from the screen-filling formula section-screen uses. */
     min-height: calc(100svh - var(--headerH) - var(--footerH));
   }
-  .contact-cta {
-    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-    gap: 40px;
-    padding: clamp(40px, 9vh, 110px) var(--gutter) clamp(40px, 8vh, 96px);
-  }
-  .contact-aside {
-    justify-self: end;
-  }
   .contact-btn {
     /* The design's `ease`, which transition-colors' default curve isn't. Only
        the background moves on hover — the text is pinned white. */
     transition: background-color 220ms ease;
-  }
-  .contact-title {
-    font-size: clamp(30px, 5.2vh, 58px);
-  }
-  .contact-blurb {
-    font-size: 15px;
-    line-height: 1.6;
-  }
-
-  /* Tablet: tighter CTA. */
-  @media (width < 1100px) {
-    .contact-cta {
-      grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
-      gap: 28px;
-      padding: 40px var(--gutter);
-    }
-    .contact-title {
-      font-size: 40px;
-    }
-    .contact-blurb {
-      font-size: 13.5px;
-      line-height: 1.5;
-    }
-  }
-
-  /* Phone: single-column CTA. */
-  @media (width < 700px) {
-    .contact-cta {
-      grid-template-columns: minmax(0, 1fr);
-      gap: 20px;
-      padding: 32px var(--gutter);
-    }
-    .contact-aside {
-      justify-self: start;
-    }
-    .contact-title {
-      font-size: 30px;
-    }
   }
 </style>

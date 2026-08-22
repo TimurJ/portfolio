@@ -1,15 +1,5 @@
 ---
-const iconAttrs = {
-  width: 17,
-  height: 17,
-  viewBox: "0 0 24 24",
-  fill: "none",
-  stroke: "currentColor",
-  "stroke-width": 1.6,
-  "stroke-linecap": "round",
-  "stroke-linejoin": "round",
-  "aria-hidden": "true",
-} as const;
+import { iconAttrs } from "../lib/icons";
 ---
 
 {
@@ -22,10 +12,10 @@ const iconAttrs = {
   data-theme-toggle
   class="flex cursor-pointer items-center gap-2 text-[13px] hover:text-accent-text max-phone-sm:-m-[13px] max-phone-sm:p-[13px]"
 >
-  <svg {...iconAttrs} class="dark:hidden">
+  <svg {...iconAttrs(17, 1.6)} class="dark:hidden">
     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
   </svg>
-  <svg {...iconAttrs} class="hidden dark:block">
+  <svg {...iconAttrs(17, 1.6)} class="hidden dark:block">
     <circle cx="12" cy="12" r="4"></circle>
     <path
       d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
@@ -42,32 +32,37 @@ const iconAttrs = {
 <script>
   import { THEME_ATTRIBUTE, THEME_STORAGE_KEY } from "../lib/theme";
 
-  /* The 500ms fade in global.css applies only while .theme-switching is on
-     the root, so it runs exactly for the flip and never on hover or load.
-     The removal timeout below must outlast that fade or it truncates. */
+  /* The --theme-fade transition in global.css applies only while
+     .theme-switching is on the root, so it runs exactly for the flip and
+     never on hover or load. The removal timeout derives from the same token
+     (plus a settle margin) so it always outlasts the fade. */
   const root = document.documentElement;
+  const fadeMs =
+    parseFloat(getComputedStyle(root).getPropertyValue("--theme-fade")) || 500;
   let switchTimeout: ReturnType<typeof setTimeout>;
 
-  document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const next =
-        root.getAttribute(THEME_ATTRIBUTE) === "dark" ? "light" : "dark";
-      root.classList.add("theme-switching");
-      clearTimeout(switchTimeout);
-      switchTimeout = setTimeout(
-        () => root.classList.remove("theme-switching"),
-        560,
-      );
-      if (next === "dark") {
-        root.setAttribute(THEME_ATTRIBUTE, "dark");
-      } else {
-        root.removeAttribute(THEME_ATTRIBUTE);
-      }
-      try {
-        localStorage.setItem(THEME_STORAGE_KEY, next);
-      } catch {
-        // no storage access — the choice simply won't persist
-      }
+  document
+    .querySelectorAll<HTMLButtonElement>("[data-theme-toggle]")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        const next =
+          root.getAttribute(THEME_ATTRIBUTE) === "dark" ? "light" : "dark";
+        root.classList.add("theme-switching");
+        clearTimeout(switchTimeout);
+        switchTimeout = setTimeout(
+          () => root.classList.remove("theme-switching"),
+          fadeMs + 60,
+        );
+        if (next === "dark") {
+          root.setAttribute(THEME_ATTRIBUTE, "dark");
+        } else {
+          root.removeAttribute(THEME_ATTRIBUTE);
+        }
+        try {
+          localStorage.setItem(THEME_STORAGE_KEY, next);
+        } catch {
+          // no storage access — the choice simply won't persist
+        }
+      });
     });
-  });
 </script>
