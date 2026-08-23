@@ -7,13 +7,14 @@ import Header from "../components/Header.astro";
 import Hero from "../components/Hero.astro";
 import Base from "../layouts/Base.astro";
 import { hrefOf, sections } from "../lib/nav";
+import { name, role } from "../lib/site";
 
 // Each section's scroll-cue target is the next entry in the shared order.
 const [, experienceLink, blogLink, contactLink] = sections;
 ---
 
 <Base
-  title="Timur Jalilov, Senior Frontend Engineer"
+  title={`${name}, ${role}`}
   description="Senior Frontend Engineer in London building the frontends of real-time trading platforms — currently leading the team behind an energy-commodities trading terminal at Onyx Capital Group."
 >
   <Header />

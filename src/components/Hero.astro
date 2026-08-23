@@ -3,6 +3,7 @@ import { Image } from "astro:assets";
 
 import portrait from "../assets/portrait-bw.png";
 import { type SectionHref, type SectionId } from "../lib/nav";
+import { name, role } from "../lib/site";
 import ScrollCue from "./ScrollCue.astro";
 
 interface Props {
@@ -30,7 +31,7 @@ const railLabelClass =
 <section id={sectionId} class="hero mx-auto grid section-screen max-w-page">
   <div class="hero-left grid">
     <div class="hero-rail flex flex-col items-center gap-6 py-7">
-      <span class={railLabelClass}>Senior Frontend Engineer</span>
+      <span class={railLabelClass}>{role}</span>
       <span class="min-h-10 w-px flex-1 bg-hair"></span>
       <span class={railLabelClass}>2026</span>
     </div>
@@ -70,7 +71,7 @@ const railLabelClass =
   <div class="hero-media relative">
     <Image
       src={portrait}
-      alt="Timur Jalilov"
+      alt={name}
       layout="full-width"
       priority
       sizes="(max-width: 700px) 100vw, (max-width: 900px) 50vw, (max-width: 1600px) 56vw, 896px"

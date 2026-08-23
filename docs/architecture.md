@@ -22,7 +22,7 @@ src/
   styles/global.css       Design tokens, Tailwind setup, base styles
   lib/theme.ts            Theme storage-key / attribute constants
   lib/nav.ts              Section order, ids, and labels (the single source)
-  lib/site.ts             Contact-address constant (Contact + Footer)
+  lib/site.ts             Site identity: email, name, role, socials (page title, Hero, Contact, Footer, Base's JSON-LD)
   lib/icons.ts            Shared presentation attrs for inline stroke icons
   assets/                 Images processed by astro:assets
 public/                   Files served verbatim (favicons, _headers)

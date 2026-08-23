@@ -1,6 +1,7 @@
 ---
 import { Font } from "astro:assets";
 
+import { name, role, socials } from "../lib/site";
 import { THEME_ATTRIBUTE, THEME_STORAGE_KEY } from "../lib/theme";
 
 import "../styles/global.css";
@@ -12,6 +13,15 @@ interface Props {
 
 const { title, description } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+
+const person = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name,
+  url: Astro.site,
+  jobTitle: role,
+  sameAs: socials.map(({ href }) => href),
+};
 ---
 
 <html lang="en">
@@ -22,6 +32,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={name} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -31,7 +42,19 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta name="twitter:card" content="summary" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta
+      name="theme-color"
+      content="#ffffff"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#0e0e0e"
+      media="(prefers-color-scheme: dark)"
+    />
     <meta name="generator" content={Astro.generator} />
+    <script type="application/ld+json" set:html={JSON.stringify(person)} />
     <Font cssVariable="--font-archivo" preload={[{ weight: 400 }]} />
     <script is:inline define:vars={{ THEME_STORAGE_KEY, THEME_ATTRIBUTE }}>
       /* Must run before first paint so a stored "dark" choice never flashes
