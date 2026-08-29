@@ -18,7 +18,8 @@ const [, experienceLink, blogLink, contactLink] = sections;
   description={`${role} in London building the frontends of real-time trading platforms — currently leading the team behind an energy-commodities trading terminal at Onyx Capital Group.`}
 >
   <Header />
-  <main>
+  {/* id: Header's skip link targets it. */}
+  <main id="main">
     <Hero nextHref={hrefOf(experienceLink.id)} />
     <Experience nextHref={hrefOf(blogLink.id)} />
     <Blog nextHref={hrefOf(contactLink.id)} />

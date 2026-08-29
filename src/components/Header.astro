@@ -4,6 +4,12 @@ import BookCallCta from "./BookCallCta.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 ---
 
+{
+  /* Ships with the nav rather than with Base: the link exists because there is
+    a nav to skip, and the chrome-less 404 has none. Its target is the page's
+    <main id="main"> — the one contract this component has with its page. */
+}
+<a href="#main" class="skip-link sr-only focus:not-sr-only">Skip to content</a>
 <header
   id="site-header"
   class="sticky top-0 z-10 mx-auto grid max-w-page grid-cols-[minmax(0,1fr)_auto] items-center bg-bg"
@@ -26,6 +32,19 @@ import ThemeToggle from "./ThemeToggle.astro";
 <style>
   /* Tier rules per docs/architecture.md; 900/700/460 =
      tablet/phone/phone-sm. */
+
+  /* focus:not-sr-only restores the link to the flow (position: static); this
+     lifts it out again so it can't displace the header. It wins because
+     component styles are unlayered while Tailwind's utilities are layered. */
+  .skip-link:focus {
+    position: fixed;
+    z-index: 20;
+    top: 8px;
+    left: 8px;
+    background: var(--bg);
+    padding: 10px 16px;
+    font-size: var(--text-meta);
+  }
 
   header {
     gap: 32px;
@@ -118,7 +137,7 @@ import ThemeToggle from "./ThemeToggle.astro";
 
     let headerHeight = 0;
     let lockedHash: string | null = null;
-    let lockTimeout: ReturnType<typeof setTimeout>;
+    let lockTimeout: ReturnType<typeof setTimeout> | undefined;
     let lastActive: string | undefined;
 
     const syncActiveNav = () => {
@@ -175,19 +194,32 @@ import ThemeToggle from "./ThemeToggle.astro";
 
     /* While an in-page anchor click's smooth scroll is in flight, the target
        owns the highlight, so it moves at the same moment whichever direction
-       the scroll comes from. The 900ms lock outlasts the scroll itself. */
+       the scroll comes from. Browsers neither expose smooth-scroll duration
+       nor let an author set it, so the lock is an upper-bound guess chosen to
+       outlast the scroll rather than a measured value. */
+    const SMOOTH_SCROLL_LOCK_MS = 900;
     document.addEventListener("click", (event) => {
       const link =
         event.target instanceof Element
           ? event.target.closest<HTMLAnchorElement>('a[href^="#"]')
           : null;
-      if (!link || !document.getElementById(link.hash.slice(1))) return;
+      /* Only a hash the nav owns may drive the highlight — the skip link's
+         #main resolves to a real element, but to no nav link, so locking onto
+         it would blank every link until the lock expired. */
+      if (
+        !link ||
+        !navTargets.some(
+          ({ link: navLink, section }) =>
+            section !== null && navLink.hash === link.hash,
+        )
+      )
+        return;
       lockedHash = link.hash;
       clearTimeout(lockTimeout);
       lockTimeout = setTimeout(() => {
         lockedHash = null;
         syncActiveNav();
-      }, 900);
+      }, SMOOTH_SCROLL_LOCK_MS);
       syncActiveNav();
     });
 

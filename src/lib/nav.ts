@@ -12,3 +12,8 @@ export type SectionId = (typeof sections)[number]["id"];
 export type SectionHref = `#${SectionId}`;
 
 export const hrefOf = (id: SectionId): SectionHref => `#${id}`;
+
+/** The id of a section's own heading, for the section's aria-labelledby — a
+    <section> is only exposed as a region landmark once it has a name. Derived
+    from the same SectionId as the link target, so the two can't drift. */
+export const titleIdOf = (id: SectionId) => `${id}-title`;

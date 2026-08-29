@@ -67,18 +67,30 @@ const personLd = JSON.stringify(person).replaceAll("<", "\\u003c");
       is:inline
       define:vars={{ THEME_STORAGE_KEY, THEME_ATTRIBUTE, THEME_COLORS }}
     >
-      /* Must run before first paint so a stored "dark" choice never flashes
-         light — hence inline (define:vars implies is:inline, which is the
-         requirement here, not a drawback). */
+      /* Must beat the first paint, so it can't be a bundled module and can't
+         import lib/theme.ts — hence inline, with the constants passed in. Two
+         jobs: raise the data-js flag progressive enhancements gate on, then
+         resolve the theme (stored choice first, OS preference otherwise).
+         Rationale for both: docs/architecture.md, Decisions. Inline scripts
+         ship verbatim — unminified, comments and all — so keep this short. */
+      document.documentElement.dataset.js = "";
+
+      let stored = null;
       try {
-        if (localStorage.getItem(THEME_STORAGE_KEY) === "dark") {
-          document.documentElement.setAttribute(THEME_ATTRIBUTE, "dark");
-          document
-            .querySelector('meta[name="theme-color"]')
-            ?.setAttribute("content", THEME_COLORS.dark);
-        }
+        /* Only this throws (blocked storage), so matchMedia stays outside. */
+        stored = localStorage.getItem(THEME_STORAGE_KEY);
       } catch {
-        /* no storage access — stay on the light default */
+        /* no storage access — fall through to the OS preference */
+      }
+      if (
+        stored === "dark" ||
+        (stored !== "light" &&
+          matchMedia("(prefers-color-scheme: dark)").matches)
+      ) {
+        document.documentElement.setAttribute(THEME_ATTRIBUTE, "dark");
+        document
+          .querySelector('meta[name="theme-color"]')
+          ?.setAttribute("content", THEME_COLORS.dark);
       }
     </script>
   </head>

@@ -1,15 +1,24 @@
 ---
-import { type SectionId } from "../lib/nav";
+import { type SectionId, titleIdOf } from "../lib/nav";
 import { email } from "../lib/site";
 import SectionIntro from "./SectionIntro.astro";
 
 const sectionId: SectionId = "contact";
+/* Bound once: the section's aria-labelledby and the heading id SectionIntro
+   renders must agree, and two independent calls would type-check even after
+   one drifted. */
+const titleId = titleIdOf(sectionId);
 const mailto = `mailto:${email}`;
 ---
 
-<section id={sectionId} class="contact-screen flex flex-col">
+<section
+  id={sectionId}
+  aria-labelledby={titleId}
+  class="contact-screen flex flex-col"
+>
   <SectionIntro
     closer
+    titleId={titleId}
     class="mx-auto w-full max-w-page flex-1 content-center"
     eyebrow="Contact"
     title="Let's Start A Conversation"

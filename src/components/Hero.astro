@@ -2,7 +2,7 @@
 import { Image } from "astro:assets";
 
 import portrait from "../assets/portrait-bw.png";
-import { type SectionHref, type SectionId } from "../lib/nav";
+import { type SectionHref, type SectionId, titleIdOf } from "../lib/nav";
 import { role } from "../lib/site";
 import ScrollCue from "./ScrollCue.astro";
 
@@ -16,6 +16,9 @@ type Stat = {
 };
 
 const sectionId: SectionId = "hero";
+/* Bound once: the section's aria-labelledby and the <h1>'s id must agree, and
+   two independent calls would type-check even after one drifted. */
+const titleId = titleIdOf(sectionId);
 const year = new Date().getFullYear();
 const { nextHref } = Astro.props;
 
@@ -28,7 +31,11 @@ const railLabelClass =
   "rotate-180 text-[11px] tracking-[0.14em] text-muted [writing-mode:vertical-rl]";
 ---
 
-<section id={sectionId} class="hero mx-auto grid section-screen max-w-page">
+<section
+  id={sectionId}
+  aria-labelledby={titleId}
+  class="hero mx-auto grid section-screen max-w-page"
+>
   <div class="hero-left grid">
     <div class="hero-rail flex flex-col items-center gap-6 py-7">
       <span class={railLabelClass}>{role}</span>
@@ -51,7 +58,10 @@ const railLabelClass =
             ))
           }
         </div>
-        <h1 class="hero-title leading-[0.88] font-normal tracking-[-0.04em]">
+        <h1
+          id={titleId}
+          class="hero-title leading-[0.88] font-normal tracking-[-0.04em]"
+        >
           Timur<br />Jalilov
         </h1>
         <div class="hero-blurb flex items-start gap-3.5">

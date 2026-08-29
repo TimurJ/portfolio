@@ -56,7 +56,7 @@ import { iconAttrs } from "../lib/icons";
   const themeColorMeta = document.querySelector('meta[name="theme-color"]');
   const fadeMs =
     parseFloat(getComputedStyle(root).getPropertyValue("--theme-fade")) || 500;
-  let switchTimeout: ReturnType<typeof setTimeout>;
+  let switchTimeout: ReturnType<typeof setTimeout> | undefined;
 
   document
     .querySelectorAll<HTMLButtonElement>("[data-theme-toggle]")

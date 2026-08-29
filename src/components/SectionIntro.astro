@@ -6,6 +6,9 @@ interface Props {
   eyebrow: string;
   title: string;
   blurb: string;
+  /** id for the <h2>, so the consuming section can name itself by it. Required
+      rather than optional: an unnamed section is not a landmark. */
+  titleId: string;
   /** Tightens the intro below 460px, for sections that must fit one phone screen. */
   condensed?: boolean;
   /** The page-closing CTA variant (Contact): roomier padding, larger centered
@@ -19,6 +22,7 @@ const {
   eyebrow,
   title,
   blurb,
+  titleId,
   condensed = false,
   closer = false,
   class: className,
@@ -34,6 +38,7 @@ const {
       {eyebrow}
     </DotLabel>
     <h2
+      id={titleId}
       class="intro-title max-w-[15ch] leading-[1.05] font-normal tracking-[-0.03em]"
     >
       {title}

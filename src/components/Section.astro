@@ -1,13 +1,14 @@
 ---
 import type { ComponentProps } from "astro/types";
 
-import { type SectionHref, type SectionId } from "../lib/nav";
+import { type SectionHref, type SectionId, titleIdOf } from "../lib/nav";
 import ScrollCue from "./ScrollCue.astro";
 import SectionIntro from "./SectionIntro.astro";
 
 /* The shell every list section shares: intro, an evenly-distributed list of
    rows, and the closing scroll cue. Intro props are picked off SectionIntro
-   rather than restated, so the two can't drift. */
+   rather than restated, so the two can't drift — except titleId, which the
+   shell derives from the section id rather than asking its consumer for. */
 type Props = Pick<
   ComponentProps<typeof SectionIntro>,
   "eyebrow" | "title" | "blurb" | "condensed"
@@ -17,10 +18,18 @@ type Props = Pick<
 };
 
 const { id, nextHref, ...intro } = Astro.props;
+/* Bound once: the section's aria-labelledby and the heading id SectionIntro
+   renders must agree, and two independent calls would type-check even after
+   one drifted. */
+const titleId = titleIdOf(id);
 ---
 
-<section id={id} class="mx-auto flex section-screen max-w-page flex-col">
-  <SectionIntro {...intro} />
+<section
+  id={id}
+  aria-labelledby={titleId}
+  class="mx-auto flex section-screen max-w-page flex-col"
+>
+  <SectionIntro titleId={titleId} {...intro} />
   <div class="section-list"><slot /></div>
   {
     /* `"" : undefined`, not the raw boolean: Astro renders `false` as

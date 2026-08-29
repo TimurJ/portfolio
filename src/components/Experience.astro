@@ -219,6 +219,12 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
     }
     .exp-desc {
       font-size: 13px;
+    }
+    /* The clamp and its toggle are one progressive enhancement, so they hang
+       together off the "scripts ran" flag Base.astro sets before first paint:
+       without JS nothing can reopen a clamped description, so the text stays
+       whole and the dead toggle never appears. */
+    :global(html[data-js]) .exp-desc {
       /* lh derives the three-line clamp from the element's real line-height
          (its floor sits below the mask-image floor accepted below). */
       max-height: 3lh;
@@ -233,11 +239,11 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
         transparent 100%
       );
     }
-    .exp-row[data-open] .exp-desc {
+    :global(html[data-js]) .exp-row[data-open] .exp-desc {
       max-height: none;
       mask-image: none;
     }
-    .read-more {
+    :global(html[data-js]) .read-more {
       display: inline-flex;
     }
     .exp-row[data-open] .read-more svg {
