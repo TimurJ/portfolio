@@ -40,3 +40,16 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      # --only-shell because the suite runs headless, and a headless chromium
+      # launch runs chrome-headless-shell — without the flag the default also
+      # pulls the full Chrome for Testing build, which nothing here launches.
+      # Drop it if a debugging session ever needs headless:false or
+      # channel:"chromium". Not cached either: the shell downloads in about
+      # what an actions/cache round-trip costs, and --with-deps has to run
+      # regardless because the system libraries aren't in the cache.
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps --only-shell chromium
+
+      - name: End-to-end tests
+        run: pnpm test:e2e
