@@ -1,6 +1,6 @@
 # Design & style system
 
-The site design lives in Claude Design: project `c3f43bbc-b6d6-42de-8ccd-dbda2639dc1b`, file `Portfolio.dc.html` ("Timur Jalilov, Senior Frontend Engineer"). The style system in `src/styles/global.css` is derived verbatim from it.
+The site design lives in Claude Design as `Portfolio.dc.html` ("Timur Jalilov, Senior Frontend Engineer"). That project is private to the author, so this document — not the source file — is the reference for anyone reading the repo. The style system in `src/styles/global.css` is derived verbatim from it.
 
 ## Tokens
 

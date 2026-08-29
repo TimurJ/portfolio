@@ -5,7 +5,9 @@
 
 # Stable root assets (not content-hashed, but they only change with a
 # deliberate redesign): a week of caching beats the platform default of
-# revalidating on every request. Rename to bust if one changes.
+# revalidating on every request. Only /og.jpg can be busted by renaming, via
+# `ogImage.src` in src/lib/site.ts; the icons are fetched at fixed well-known
+# paths, so a redesign accepts up to a week of stale icons for return visitors.
 /og.jpg
   Cache-Control: public, max-age=604800
 /favicon.svg

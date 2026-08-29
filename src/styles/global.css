@@ -1,5 +1,5 @@
-/* Style system derived from the Claude Design portfolio
-   (claude.ai/design project c3f43bbc-b6d6-42de-8ccd-dbda2639dc1b, Portfolio.dc.html).
+/* Style system derived from the Claude Design portfolio source
+   (Portfolio.dc.html), which is private to the author — see docs/design.md.
    Token names and values are verbatim from the design. Light is the default
    theme; dark applies via data-theme="dark" on the root element (the design
    persists the choice in localStorage under "tj-portfolio-theme"). */
@@ -26,6 +26,9 @@
   /* Keep UA-rendered surfaces (scrollbars, form controls, overscroll) on the
      page's palette; the dark block flips it with the tokens. */
   color-scheme: light;
+  /* Both --bg values are mirrored by THEME_COLORS in lib/theme.ts, which feeds
+     the theme-color meta (a <meta content> can't read a custom property).
+     Change them together. */
   --bg: #ffffff;
   --ink: #1c1c1c;
   --muted: #6a6a6a;
@@ -84,6 +87,15 @@
   --container-page: 1600px;
 }
 
+/* The small type scale (text-meta, text-body). `static`, not plain @theme:
+   Tailwind never scans Astro scoped <style> blocks, so without it the vars
+   their var() references consume would vanish with the last markup use —
+   failing as a silently inherited font-size, not an error. */
+@theme static {
+  --text-meta: 13px;
+  --text-body: 15px;
+}
+
 /* Shared section gutter: the horizontal inset every section's scoped styles
    consume. Media query conditions can't read variables, but declarations
    can, so the 36→20 step lives here once. (700 is --breakpoint-phone. The
@@ -126,6 +138,13 @@
   padding-block: 22px;
   @media (width < 700px) {
     padding-block: 14px 24px;
+  }
+  /* 460 is --breakpoint-phone-sm. A condensed section (one that must fit a
+     small-phone screen) tightens its cue with its intro. */
+  @media (width < 460px) {
+    &[data-condensed] {
+      padding-block: 10px 24px;
+    }
   }
 }
 

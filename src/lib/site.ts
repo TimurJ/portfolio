@@ -1,7 +1,8 @@
 /** Contact address, rendered by Contact (CTA links) and Footer (mailto + display). */
 export const email = "timurjalilov1@gmail.com";
 
-/** Site identity — page title (index), Hero rail/portrait, and Base's JSON-LD. */
+/** Site identity — page titles (index, 404), Hero's rail label, and Base's
+    meta/JSON-LD. */
 export const name = "Timur Jalilov";
 export const role = "Senior Frontend Engineer";
 

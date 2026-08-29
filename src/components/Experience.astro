@@ -1,11 +1,10 @@
 ---
 import { iconAttrs } from "../lib/icons";
 import { type SectionHref, type SectionId } from "../lib/nav";
-import ScrollCue from "./ScrollCue.astro";
-import SectionIntro from "./SectionIntro.astro";
+import DotLabel from "./DotLabel.astro";
+import Section from "./Section.astro";
 
 interface Props {
-  /** Scroll-cue target: the next section, owned by the page's composition. */
   nextHref: SectionHref;
 }
 
@@ -67,62 +66,55 @@ const { nextHref } = Astro.props;
 const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
 ---
 
-<section id={sectionId} class="mx-auto flex section-screen max-w-page flex-col">
-  <SectionIntro
-    condensed
-    eyebrow="Experiences"
-    title="Explore My Engineering Journey"
-    blurb="Five years building trading systems, from a multi-dealer RFQ platform for government bonds and repo at CME Group to a greenfield energy-commodities terminal I now own end to end."
-  />
-  <div class="section-list">
-    {
-      experiences.map(({ company, subtitle, meta, description, pills }) => (
-        <article class="exp-row grid items-start border-b border-hair">
-          <div class="exp-head flex flex-col">
-            <h3 class={nameClass}>{company}</h3>
-            {subtitle && <span class={nameClass}>{subtitle}</span>}
+<Section
+  condensed
+  id={sectionId}
+  nextHref={nextHref}
+  eyebrow="Experiences"
+  title="Explore My Engineering Journey"
+  blurb="Five years building trading systems, from a multi-dealer RFQ platform for government bonds and repo at CME Group to a greenfield energy-commodities terminal I now own end to end."
+>
+  {
+    experiences.map(({ company, subtitle, meta, description, pills }) => (
+      <article class="exp-row grid items-start border-b border-hair">
+        <div class="exp-head flex flex-col">
+          <h3 class={nameClass}>{company}</h3>
+          {subtitle && <span class={nameClass}>{subtitle}</span>}
+          <div class="exp-meta">
             {meta.map((item) => (
-              <span class="exp-meta inline-flex items-center gap-[9px] text-muted">
-                <span class="size-1.5 flex-none rounded-full bg-dot" />
-                {item}
-              </span>
+              <DotLabel class="text-muted">{item}</DotLabel>
             ))}
           </div>
-          <div class="flex min-w-0 flex-col">
-            <p class="exp-desc text-pretty text-muted">{description}</p>
-            <button
-              type="button"
-              aria-expanded="false"
-              class="read-more my-2.5 cursor-pointer items-center gap-[7px] self-start border-b border-accent-text/40 pb-0.5 text-[13px] tracking-[0.02em] text-accent-text hover:border-accent-text"
-            >
-              <span class="label-more">Read more</span>
-              <span class="label-less">Show less</span>
-              <svg {...iconAttrs(12, 2)}>
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
-          </div>
-          <div class="exp-pills flex min-w-0 flex-wrap content-start">
-            {pills.map((pill) => (
-              <span class="pill rounded-full border border-line whitespace-nowrap uppercase">
-                {pill}
-              </span>
-            ))}
-          </div>
-        </article>
-      ))
-    }
-  </div>
-  <div class="exp-cue section-cue">
-    <ScrollCue href={nextHref} />
-  </div>
-</section>
+        </div>
+        <div class="flex min-w-0 flex-col">
+          <p class="exp-desc text-pretty text-muted">{description}</p>
+          <button
+            type="button"
+            aria-expanded="false"
+            class="read-more my-2.5 cursor-pointer items-center gap-[7px] self-start border-b border-accent-text/40 pb-0.5 text-meta tracking-[0.02em] text-accent-text hover:border-accent-text"
+          >
+            <span class="label-more">Read more</span>
+            <span class="label-less">Show less</span>
+            <svg {...iconAttrs(12, 2)}>
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+        </div>
+        <div class="exp-pills flex min-w-0 flex-wrap content-start">
+          {pills.map((pill) => (
+            <span class="pill rounded-full border border-line whitespace-nowrap uppercase">
+              {pill}
+            </span>
+          ))}
+        </div>
+      </article>
+    ))
+  }
+</Section>
 
 <style>
-  /* Per-tier rules live here per the styling policy (docs/architecture.md);
-     1100/700/460 are --breakpoint-laptop/--breakpoint-phone/
-     --breakpoint-phone-sm written out; 1000 is this section's own
-     mid-laptop tier. */
+  /* Tier rules per docs/architecture.md; 1100/700/460 =
+     laptop/phone/phone-sm, and 1000 is this section's own mid-laptop tier. */
 
   .exp-row {
     grid-template-columns: minmax(0, 10fr) minmax(0, 12fr) minmax(0, 9fr);
@@ -132,14 +124,20 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
   .exp-head {
     gap: 8px;
   }
+  /* Scoped classes can't reach into DotLabel, so the meta rows size by
+     inheritance. The wrapper generates no box (display: contents), so they
+     stay direct flex items of .exp-head and its gap still spaces them —
+     sizing them here rather than on .exp-head keeps the meta and the
+     .exp-name headings independent. */
+  .exp-meta {
+    display: contents;
+    font-size: var(--text-meta);
+  }
   .exp-name {
     font-size: clamp(20px, 2vw, 30px);
   }
-  .exp-meta {
-    font-size: 13px;
-  }
   .exp-desc {
-    font-size: 15px;
+    font-size: var(--text-body);
     line-height: 1.55;
   }
   .exp-pills {
@@ -264,9 +262,6 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
     }
     .exp-pills {
       gap: 5px;
-    }
-    .exp-cue {
-      padding-block: 10px 24px;
     }
   }
 </style>

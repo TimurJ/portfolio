@@ -1,11 +1,10 @@
 ---
 import { iconAttrs } from "../lib/icons";
 import { type SectionHref, type SectionId } from "../lib/nav";
-import ScrollCue from "./ScrollCue.astro";
-import SectionIntro from "./SectionIntro.astro";
+import DotLabel from "./DotLabel.astro";
+import Section from "./Section.astro";
 
 interface Props {
-  /** Scroll-cue target: the next section, owned by the page's composition. */
   nextHref: SectionHref;
 }
 
@@ -44,51 +43,43 @@ const sectionId: SectionId = "blog";
 const { nextHref } = Astro.props;
 ---
 
-<section id={sectionId} class="mx-auto flex section-screen max-w-page flex-col">
-  <SectionIntro
-    eyebrow="Blog"
-    title="Explore My Blog"
-    blurb="These are the findings I've collected building front ends in finance: trading screens, market data, design systems. I write them up as I go so the insights are useful to someone other than me."
-  />
-  <div class="section-list">
-    {
-      posts.map(({ date, readTime, title, excerpt }) => (
-        <article class="blog-row grid items-start border-b border-hair">
-          <div class="blog-meta text-muted">
-            <span class="inline-flex items-center gap-[9px]">
-              <span class="size-1.5 flex-none rounded-full bg-dot" />
-              {date}
-            </span>
-            <span>{readTime}</span>
-          </div>
-          <div class="flex min-w-0 flex-col gap-3">
-            <h3 class="blog-title leading-[1.15] font-normal tracking-[-0.02em]">
-              {title}
-            </h3>
-            <p class="blog-excerpt max-w-[62ch] text-pretty text-muted">
-              {excerpt}
-            </p>
-            <span class="blog-cta self-start border-b border-accent-text/40 pb-0.5 text-[13px] text-accent-text">
-              Read article
-            </span>
-          </div>
-          <svg class="blog-arrow" {...iconAttrs(30, 1.3)}>
-            <path d="M7 17 17 7" />
-            <path d="M8 7h9v9" />
-          </svg>
-        </article>
-      ))
-    }
-  </div>
-  <div class="section-cue">
-    <ScrollCue href={nextHref} />
-  </div>
-</section>
+<Section
+  id={sectionId}
+  nextHref={nextHref}
+  eyebrow="Blog"
+  title="Explore My Blog"
+  blurb="These are the findings I've collected building front ends in finance: trading screens, market data, design systems. I write them up as I go so the insights are useful to someone other than me."
+>
+  {
+    posts.map(({ date, readTime, title, excerpt }) => (
+      <article class="blog-row grid items-start border-b border-hair">
+        <div class="blog-meta text-muted">
+          <DotLabel>{date}</DotLabel>
+          <span>{readTime}</span>
+        </div>
+        <div class="flex min-w-0 flex-col gap-3">
+          <h3 class="blog-title leading-[1.15] font-normal tracking-[-0.02em]">
+            {title}
+          </h3>
+          <p class="blog-excerpt max-w-[62ch] text-pretty text-muted">
+            {excerpt}
+          </p>
+          <span class="blog-cta self-start border-b border-accent-text/40 pb-0.5 text-meta text-accent-text">
+            Read article
+          </span>
+        </div>
+        <svg class="blog-arrow" {...iconAttrs(30, 1.3)}>
+          <path d="M7 17 17 7" />
+          <path d="M8 7h9v9" />
+        </svg>
+      </article>
+    ))
+  }
+</Section>
 
 <style>
-  /* Per-tier rules live here per the styling policy (docs/architecture.md);
-     1100/900/700 are --breakpoint-laptop/--breakpoint-tablet/
-     --breakpoint-phone written out. */
+  /* Tier rules per docs/architecture.md; 1100/900/700 =
+     laptop/tablet/phone. */
 
   .blog-row {
     grid-template-columns: minmax(0, 3fr) minmax(0, 10fr) auto;
@@ -99,7 +90,7 @@ const { nextHref } = Astro.props;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    font-size: 15px;
+    font-size: var(--text-body);
     line-height: 1.2;
     margin-top: 5px;
   }
@@ -107,7 +98,7 @@ const { nextHref } = Astro.props;
     font-size: clamp(20px, 2vw, 30px);
   }
   .blog-excerpt {
-    font-size: 15px;
+    font-size: var(--text-body);
     line-height: 1.55;
   }
   .blog-title,

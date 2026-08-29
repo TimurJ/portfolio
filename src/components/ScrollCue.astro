@@ -1,7 +1,8 @@
 ---
+import { type SectionHref } from "../lib/nav";
+
 interface Props {
-  /** Scroll-cue target: the next section, owned by the page's composition. */
-  href: string;
+  href: SectionHref;
   /** Extra utilities for the consumer's context (placement, responsive size). */
   class?: string;
 }
@@ -9,6 +10,6 @@ interface Props {
 const { href, class: className } = Astro.props;
 ---
 
-<a href={href} class:list={["text-[13px] text-muted", className]}>
+<a href={href} class:list={["text-meta text-muted", className]}>
   Scroll Down ↓
 </a>

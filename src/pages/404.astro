@@ -3,22 +3,26 @@ import Base from "../layouts/Base.astro";
 import { name } from "../lib/site";
 ---
 
-<Base title={`Page not found — ${name}`} description="This page doesn't exist.">
+<Base
+  title={`Page not found — ${name}`}
+  description="This page doesn't exist."
+  noindex
+>
   <main
     class="mx-auto flex min-h-svh max-w-page flex-col items-start justify-center gap-5 px-(--gutter)"
   >
-    <p class="text-[13px] tracking-[0.14em] text-muted">404</p>
+    <p class="text-meta tracking-[0.14em] text-muted">404</p>
     <h1
       class="text-[clamp(44px,8vw,96px)] leading-none font-normal tracking-[-0.04em]"
     >
       Page not found
     </h1>
-    <p class="text-[15px] leading-[1.55] text-muted">
+    <p class="text-body leading-[1.55] text-muted">
       There's nothing at this address.
     </p>
     <a
       href="/"
-      class="border-b border-accent-text/40 pb-0.5 text-[13px] text-accent-text hover:border-accent-text"
+      class="border-b border-accent-text/40 pb-0.5 text-meta text-accent-text hover:border-accent-text"
     >
       Back to home
     </a>

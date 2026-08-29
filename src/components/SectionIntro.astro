@@ -1,5 +1,6 @@
 ---
 import BookCallCta from "./BookCallCta.astro";
+import DotLabel from "./DotLabel.astro";
 
 interface Props {
   eyebrow: string;
@@ -26,11 +27,12 @@ const {
 
 <div class:list={["intro grid", { condensed, closer }, className]}>
   <div class="flex flex-col gap-[18px]">
-    <span
-      class="inline-flex items-center gap-2.5 text-[11px] tracking-[0.12em] text-accent-text uppercase"
+    <DotLabel
+      large
+      class="text-[11px] tracking-[0.12em] text-accent-text uppercase"
     >
-      <span class="size-2 rounded-full bg-dot"></span>{eyebrow}
-    </span>
+      {eyebrow}
+    </DotLabel>
     <h2
       class="intro-title max-w-[15ch] leading-[1.05] font-normal tracking-[-0.03em]"
     >
@@ -49,12 +51,10 @@ const {
 </div>
 
 <style>
-  /* Per-tier rules live here per the styling policy (docs/architecture.md);
-     1100 is --breakpoint-laptop and 700/460 are
-     --breakpoint-phone/--breakpoint-phone-sm written out; 400 is this
-     intro's own narrowest tier. The .closer overrides win over the markup
-     utilities they replace because component styles are unlayered while
-     Tailwind's utilities are layered. */
+  /* Tier rules per docs/architecture.md; 1100/700/460 =
+     laptop/phone/phone-sm, and 400 is this intro's own narrowest tier. The
+     .closer overrides win over the markup utilities they replace because
+     component styles are unlayered while Tailwind's utilities are layered. */
 
   .intro {
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
@@ -70,7 +70,7 @@ const {
     margin-top: 34px;
   }
   .intro-blurb {
-    font-size: 15px;
+    font-size: var(--text-body);
     line-height: 1.6;
   }
   .intro.closer {

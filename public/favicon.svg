@@ -1,7 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <!-- Tile/letter colors mirror the ink/bg tokens in src/styles/global.css.
        Safari ignores media queries in favicon SVGs and always shows the light
-       variant; favicon.ico and apple-touch-icon.png are rasterized from it. -->
+       variant; favicon.ico and apple-touch-icon.png are rasterized from this
+       file by scripts/rasterize-favicon.mjs — rerun it after any edit here, or
+       the three icons drift apart.
+
+       The mark is an outlined "TJ" rather than live text: favicon renderers
+       have no access to the site's webfont, so a font-family would draw in
+       whatever platform UI font resolved and disagree with the rasters. To
+       regenerate the path, take Archivo weight 600 from
+       node_modules/.astro/fonts/ (four hash-named .woff2 files; pick by
+       OS/2.usWeightClass), lay out "TJ", scale by 30/1000 with -1 tracking,
+       flip in y, and centre its bounding box on (32, 33). -->
   <style>
     .tile { fill: #1c1c1c; }
     .mark { fill: #ffffff; }
@@ -11,15 +21,5 @@
     }
   </style>
   <rect class="tile" width="64" height="64" rx="14" />
-  <text
-    class="mark"
-    x="32"
-    y="33"
-    text-anchor="middle"
-    dominant-baseline="central"
-    font-family="Archivo, ui-sans-serif, system-ui, sans-serif"
-    font-size="30"
-    font-weight="600"
-    letter-spacing="-1"
-  >TJ</text>
+  <path class="mark" d="M24.12 43.11L24.12 25.89L17.55 25.89L17.55 22.53L34.62 22.53L34.62 25.89L28.02 25.89L28.02 43.11Z M39.32 43.47Q37.04 43.47 35.43 42.78Q33.83 42.09 32.99 40.76Q32.15 39.42 32.15 37.41L32.15 36.27L36.02 36.27L36.02 37.41Q36.02 38.76 36.84 39.46Q37.67 40.17 39.32 40.17Q40.91 40.17 41.72 39.09Q42.53 38.01 42.53 36.06L42.53 22.53L46.46 22.53L46.46 36.06Q46.46 38.52 45.62 40.17Q44.78 41.82 43.19 42.65Q41.6 43.47 39.32 43.47Z" />
 </svg>

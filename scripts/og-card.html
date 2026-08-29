@@ -14,7 +14,12 @@
        3. headless browser at 1200×630 viewport →
           http://127.0.0.1:8123/scripts/og-card.html
        4. JPEG screenshot (quality ~90) → public/og.jpg (keep it under 300KB
-          or WhatsApp link previews fail) -->
+          or WhatsApp link previews fail)
+
+     If Archivo fails to load — a stale hash below, a renamed family — the card
+     would otherwise render in the fallback sans with no error, so the script at
+     the end of <body> paints an unmissable banner instead. Never screenshot a
+     card showing it. -->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -87,5 +92,41 @@
       <span class="site">timurjalilov.com</span>
     </div>
     <img class="portrait" src="../src/assets/portrait-bw.png" alt="" />
+    <script>
+      /* Three ways the card can lose Archivo, one guard each:
+         - the @font-face src pins a build-output content hash that Astro or
+           Fontsource can invalidate at any rebuild — a broken src makes
+           document.fonts.load() *reject*, so the catch is load-bearing;
+         - a face that resolves without actually loading — fonts.check();
+         - the family renamed or the @font-face block dropped — the set
+           membership test, because check() returns true when *no* face matches
+           the family (per the CSS Font Loading spec: a font list that triggers
+           no loads is "loaded"), and load() resolves rather than rejecting. */
+      const hasArchivoFace = () =>
+        [...document.fonts].some(
+          (face) =>
+            face.family.replace(/["']/g, "").toLowerCase() === "archivo",
+        );
+      document.fonts
+        .load('400 100px "Archivo"')
+        .then(
+          () => hasArchivoFace() && document.fonts.check('400 100px "Archivo"'),
+        )
+        .catch(() => false)
+        .then((loaded) => {
+          if (loaded) return;
+          const banner = document.createElement("div");
+          banner.textContent =
+            "ARCHIVO DID NOT LOAD — fix the @font-face before screenshotting";
+          banner.setAttribute(
+            "style",
+            "position:fixed;inset:0;display:flex;align-items:center;" +
+              "justify-content:center;text-align:center;padding:0 60px;" +
+              "background:#d80000;color:#fff;font:700 48px/1.2 monospace;" +
+              "letter-spacing:-0.02em;z-index:9999",
+          );
+          document.body.append(banner);
+        });
+    </script>
   </body>
 </html>

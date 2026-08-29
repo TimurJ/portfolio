@@ -8,6 +8,7 @@ export const sections = [
 ] as const;
 
 export type SectionId = (typeof sections)[number]["id"];
+/** In-page link target for a section. */
 export type SectionHref = `#${SectionId}`;
 
 export const hrefOf = (id: SectionId): SectionHref => `#${id}`;
