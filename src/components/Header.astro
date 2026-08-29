@@ -6,12 +6,9 @@ import ThemeToggle from "./ThemeToggle.astro";
 
 <header
   id="site-header"
-  class="sticky top-0 z-10 mx-auto grid max-w-page grid-cols-[minmax(0,1fr)_auto] items-center gap-8 bg-bg px-9 py-5 max-tablet:gap-4 max-tablet:px-5 max-tablet:py-3.5 max-phone:px-4 max-phone:py-3 max-phone-sm:gap-3"
+  class="sticky top-0 z-10 mx-auto grid max-w-page grid-cols-[minmax(0,1fr)_auto] items-center bg-bg"
 >
-  <nav
-    aria-label="Main"
-    class="flex flex-wrap items-center gap-[26px] text-meta max-tablet:gap-[18px] max-phone:gap-4 max-phone-sm:flex-nowrap max-phone-sm:gap-3.5 max-phone-sm:text-[12px] phone:max-tablet:text-[12px]"
-  >
+  <nav aria-label="Main" class="flex flex-wrap items-center">
     {
       sections.map(({ id, label }) => (
         <a href={hrefOf(id)} class="border-b border-transparent pb-0.5">
@@ -20,15 +17,28 @@ import ThemeToggle from "./ThemeToggle.astro";
       ))
     }
   </nav>
-  <div
-    class="flex items-center gap-5 max-tablet:gap-3.5 max-tablet:whitespace-nowrap"
-  >
+  <div class="header-actions flex items-center">
     <ThemeToggle />
-    <BookCallCta class="max-phone-sm:text-[12px]" />
+    <BookCallCta compact />
   </div>
 </header>
 
 <style>
+  /* Tier rules per docs/architecture.md; 900/700/460 =
+     tablet/phone/phone-sm. */
+
+  header {
+    gap: 32px;
+    padding-block: 20px;
+    padding-inline: 36px;
+  }
+  nav {
+    gap: 26px;
+    font-size: var(--text-meta);
+  }
+  .header-actions {
+    gap: 20px;
+  }
   /* The slow fade makes the highlight glide between links as scrolling hands
      one section's ownership of the viewport to the next. */
   nav a {
@@ -39,6 +49,55 @@ import ThemeToggle from "./ThemeToggle.astro";
   nav a[aria-current] {
     color: var(--accent-text);
     border-bottom-color: currentColor;
+  }
+
+  /* Tablet: tighter chrome all round. */
+  @media (width < 900px) {
+    header {
+      gap: 16px;
+      padding-block: 14px;
+      padding-inline: 20px;
+    }
+    nav {
+      gap: 18px;
+    }
+    .header-actions {
+      gap: 14px;
+      white-space: nowrap;
+    }
+  }
+
+  /* Tablet band only: the nav and the actions still share one row here, so
+     the links step down to fit. Below 700 the nav wraps to a line of its own
+     and regains the full meta size — hence a band rather than a step. */
+  @media (700px <= width < 900px) {
+    nav {
+      font-size: 12px;
+    }
+  }
+
+  /* Phone: the header keeps shrinking while the nav, now on its own line,
+     opens back up. */
+  @media (width < 700px) {
+    header {
+      padding-block: 12px;
+      padding-inline: 16px;
+    }
+    nav {
+      gap: 16px;
+    }
+  }
+
+  /* Small phones: the nav holds one line rather than wrapping. */
+  @media (width < 460px) {
+    header {
+      gap: 12px;
+    }
+    nav {
+      flex-wrap: nowrap;
+      gap: 14px;
+      font-size: 12px;
+    }
   }
 </style>
 

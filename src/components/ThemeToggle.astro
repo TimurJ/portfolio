@@ -10,7 +10,7 @@ import { iconAttrs } from "../lib/icons";
 <button
   type="button"
   data-theme-toggle
-  class="flex cursor-pointer items-center gap-2 text-meta hover:text-accent-text max-phone-sm:-m-[13px] max-phone-sm:p-[13px]"
+  class="flex cursor-pointer items-center gap-2 text-meta hover:text-accent-text"
 >
   <svg {...iconAttrs(17, 1.6)} class="dark:hidden">
     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
@@ -28,6 +28,18 @@ import { iconAttrs } from "../lib/icons";
     >
   </span>
 </button>
+
+<style>
+  /* Tier rule per docs/architecture.md; 460 is the phone-sm tier. The label
+     goes sr-only there, so pad the button out to a ~44px tap target and
+     negative-margin it back, leaving the header row's layout unchanged. */
+  @media (width < 460px) {
+    button {
+      margin: -13px;
+      padding: 13px;
+    }
+  }
+</style>
 
 <script>
   import {
