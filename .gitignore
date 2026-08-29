@@ -30,5 +30,5 @@ pnpm-debug.log*
 .claude/
 .playwright-mcp/
 
-# internal audit roadmap — working notes, not part of the artifact
-audit-remediation-plan.md
+# local planning docs — working notes and roadmaps, not part of the artifact
+local-plans/

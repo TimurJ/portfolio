@@ -19,7 +19,10 @@
 
 # Security headers on every path (matching rules combine, so hashed assets get
 # these plus the cache rule above). A CSP is deferred until launch-freeze: the
-# HTML ships inline scripts/styles by design — see docs/launch-checklist.md.
+# HTML ships an inline pre-paint theme script plus a stylesheet Astro inlines by
+# default, so a real policy means per-build hashes or `inlineStylesheets:
+# "never"` — trading away first-paint behaviour. When it lands, frame-ancestors
+# supersedes the X-Frame-Options line below.
 /*
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY

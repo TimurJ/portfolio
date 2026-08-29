@@ -1,8 +1,8 @@
 import type { APIRoute } from "astro";
 
 /* Dynamic so the sitemap URL derives from `site` in astro.config.mjs — the
-   domain lives once (docs/launch-checklist.md still has a cutover pending).
-   The recipe from the @astrojs/sitemap docs, verbatim. */
+   domain lives once, and the cutover to it is still pending. The recipe from
+   the @astrojs/sitemap docs, verbatim. */
 const getRobotsTxt = (sitemapURL: URL) => `User-agent: *
 Allow: /
 

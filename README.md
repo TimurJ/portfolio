@@ -14,7 +14,7 @@ Personal portfolio site — a minimalist, static single page, live at [timurjali
 - **CI** runs the same gates as `pnpm verify`: formatting, ESLint (with `jsx-a11y`), typecheck, build.
 
 Design fidelity, structure, and the decision record live in the docs:
-[architecture](docs/architecture.md) · [design](docs/design.md) · [deploying](docs/deploying.md) · [launch checklist](docs/launch-checklist.md)
+[architecture](docs/architecture.md) · [design](docs/design.md) · [deploying](docs/deploying.md)
 
 ## Commands
 
@@ -34,7 +34,7 @@ Requires Node ≥ 24.16 and pnpm (pinned via the `packageManager` field).
 
 ## Deploying
 
-Deploys to Cloudflare Workers as static assets via Workers Builds — see [docs/deploying.md](docs/deploying.md). Pre-launch items are tracked in [docs/launch-checklist.md](docs/launch-checklist.md).
+Deploys to Cloudflare Workers as static assets via Workers Builds — see [docs/deploying.md](docs/deploying.md).
 
 ## License
 
