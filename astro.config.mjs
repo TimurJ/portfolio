@@ -3,9 +3,12 @@ import { defineConfig, fontProviders } from "astro/config";
 
 import tailwindcss from "@tailwindcss/vite";
 
+import sitemap from "@astrojs/sitemap";
+
 // https://astro.build/config
 export default defineConfig({
   site: "https://timurjalilov.com",
+  integrations: [sitemap()],
   vite: {
     plugins: [tailwindcss()],
   },

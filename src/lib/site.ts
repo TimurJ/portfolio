@@ -10,3 +10,8 @@ export const socials = [
   { href: "https://github.com/TimurJ", label: "GitHub" },
   { href: "https://www.linkedin.com/in/timur-jalilov/", label: "LinkedIn" },
 ];
+
+/** Social card served from public/og.jpg — Base's og:image tags. The card is
+    rendered from scripts/og-card.html, whose fixed canvas must match these
+    dimensions; that file names this object as the authority. */
+export const ogImage = { src: "/og.jpg", width: 1200, height: 630 };

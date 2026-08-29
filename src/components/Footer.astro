@@ -2,21 +2,11 @@
 import { hrefOf, sections } from "../lib/nav";
 import { email, socials } from "../lib/site";
 
-type FooterLink = {
-  href: string;
-  label: string;
-};
-
 const mailto = `mailto:${email}`;
 const year = new Date().getFullYear();
 
 // The footer doesn't link to the section it closes the page with.
 const footerNav = sections.filter(({ id }) => id !== "contact");
-
-const elsewhere: FooterLink[] = socials.map(({ href, label }) => ({
-  href,
-  label: `${label} ↗`,
-}));
 
 const footerLinkClass = "text-bg hover:text-accent";
 const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
@@ -47,9 +37,9 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
       <div class="flex flex-col gap-3.5">
         <span class={footerLabelClass}>Elsewhere</span>
         {
-          elsewhere.map(({ href, label }) => (
+          socials.map(({ href, label }) => (
             <a href={href} class={footerLinkClass}>
-              {label}
+              {label} ↗
             </a>
           ))
         }

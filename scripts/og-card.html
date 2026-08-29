@@ -1,0 +1,91 @@
+<!doctype html>
+<!-- Source for public/og.jpg — the og:image social card. Not part of the build.
+
+     Manual mirror (an unbuilt file can't import): the name/role strings track
+     src/lib/site.ts, the domain tracks `site` in astro.config.mjs, the colors
+     track the light-theme tokens in src/styles/global.css, and the 1200×630
+     canvas must match `ogImage` in src/lib/site.ts — that object is the
+     authority. The type treatment mirrors Hero.astro.
+
+     To regenerate:
+       1. pnpm build            (produces the Archivo woff2 referenced below;
+                                 if its hash changed, update the @font-face)
+       2. serve the repo root   (e.g. python3 -m http.server 8123)
+       3. headless browser at 1200×630 viewport →
+          http://127.0.0.1:8123/scripts/og-card.html
+       4. JPEG screenshot (quality ~90) → public/og.jpg (keep it under 300KB
+          or WhatsApp link previews fail) -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      /* The exact 400-weight Fontsource file the site preloads, so the card
+         renders offline in the same cut of Archivo the deployed site ships. */
+      @font-face {
+        font-family: "Archivo";
+        font-weight: 400;
+        src: url("../dist/_astro/fonts/95a4de665f311d33.woff2") format("woff2");
+      }
+      :root {
+        --bg: #ffffff;
+        --ink: #1c1c1c;
+        --muted: #6a6a6a;
+        --accent: #d80000;
+      }
+      * {
+        margin: 0;
+      }
+      body {
+        width: 1200px;
+        height: 630px;
+        display: flex;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Archivo", sans-serif;
+      }
+      .copy {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 34px;
+        padding-left: 84px;
+      }
+      .role {
+        font-size: 22px;
+        letter-spacing: 0.14em;
+        color: var(--muted);
+      }
+      .name {
+        font-size: 150px;
+        line-height: 0.88;
+        letter-spacing: -0.04em;
+        font-weight: 400;
+      }
+      .rule {
+        width: 64px;
+        height: 4px;
+        background: var(--accent);
+      }
+      .site {
+        font-size: 22px;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+      }
+      .portrait {
+        height: 630px;
+        width: auto;
+        flex: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="copy">
+      <span class="role">Senior Frontend Engineer</span>
+      <h1 class="name">Timur<br />Jalilov</h1>
+      <div class="rule"></div>
+      <span class="site">timurjalilov.com</span>
+    </div>
+    <img class="portrait" src="../src/assets/portrait-bw.png" alt="" />
+  </body>
+</html>

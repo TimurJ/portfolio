@@ -30,13 +30,18 @@ import { iconAttrs } from "../lib/icons";
 </button>
 
 <script>
-  import { THEME_ATTRIBUTE, THEME_STORAGE_KEY } from "../lib/theme";
+  import {
+    THEME_ATTRIBUTE,
+    THEME_COLORS,
+    THEME_STORAGE_KEY,
+  } from "../lib/theme";
 
   /* The --theme-fade transition in global.css applies only while
      .theme-switching is on the root, so it runs exactly for the flip and
      never on hover or load. The removal timeout derives from the same token
      (plus a settle margin) so it always outlasts the fade. */
   const root = document.documentElement;
+  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
   const fadeMs =
     parseFloat(getComputedStyle(root).getPropertyValue("--theme-fade")) || 500;
   let switchTimeout: ReturnType<typeof setTimeout>;
@@ -58,6 +63,7 @@ import { iconAttrs } from "../lib/icons";
         } else {
           root.removeAttribute(THEME_ATTRIBUTE);
         }
+        themeColorMeta?.setAttribute("content", THEME_COLORS[next]);
         try {
           localStorage.setItem(THEME_STORAGE_KEY, next);
         } catch {

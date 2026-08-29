@@ -25,12 +25,13 @@ src/
   lib/site.ts             Site identity: email, name, role, socials (page title, Hero, Contact, Footer, Base's JSON-LD)
   lib/icons.ts            Shared presentation attrs for inline stroke icons
   assets/                 Images processed by astro:assets
-public/                   Files served verbatim (favicons, _headers)
+public/                   Files served verbatim (favicons, _headers, og.jpg)
+scripts/og-card.html      Source for public/og.jpg — rendered once at 1200×630, not built
 ```
 
 ## Page composition
 
-`index.astro` is the only page. It composes `Base` → `Header` → one component per page section, in scroll order. Section order itself lives once, in `lib/nav.ts` (`sections`): the header and footer navs render it, the page derives each section's scroll-cue target (`nextHref`) from it, and each section declares its own `id` as a typed `SectionId` against it — so a renamed or reordered section is a type error, not a dead link. The chain ends at Contact, which takes no `nextHref` and carries no scroll cue; the site footer (`Footer`) follows as a sibling _after_ `<main>`, because a `<footer>` nested in `<main>` (or any section) loses its `contentinfo` landmark role.
+`index.astro` is the only content page (`404.astro` is a chrome-less error page: `Base` + a way back home, served by the Worker via `not_found_handling: "404-page"`). It composes `Base` → `Header` → one component per page section, in scroll order. Section order itself lives once, in `lib/nav.ts` (`sections`): the header and footer navs render it, the page derives each section's scroll-cue target (`nextHref`) from it, and each section declares its own `id` as a typed `SectionId` against it — so a renamed or reordered section is a type error, not a dead link. The chain ends at Contact, which takes no `nextHref` and carries no scroll cue; the site footer (`Footer`) follows as a sibling _after_ `<main>`, because a `<footer>` nested in `<main>` (or any section) loses its `contentinfo` landmark role.
 
 Ownership boundaries:
 

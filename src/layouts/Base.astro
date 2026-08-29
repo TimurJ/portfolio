@@ -1,8 +1,8 @@
 ---
 import { Font } from "astro:assets";
 
-import { name, role, socials } from "../lib/site";
-import { THEME_ATTRIBUTE, THEME_STORAGE_KEY } from "../lib/theme";
+import { name, ogImage, role, socials } from "../lib/site";
+import { THEME_ATTRIBUTE, THEME_COLORS, THEME_STORAGE_KEY } from "../lib/theme";
 
 import "../styles/global.css";
 
@@ -36,33 +36,36 @@ const person = {
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    {
-      /* og:image is deferred until a social card exists — see docs/launch-checklist.md. */
-    }
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={new URL(ogImage.src, Astro.site)} />
+    <meta property="og:image:width" content={String(ogImage.width)} />
+    <meta property="og:image:height" content={String(ogImage.height)} />
+    <meta property="og:image:alt" content={`${name} — ${role}`} />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <meta
-      name="theme-color"
-      content="#ffffff"
-      media="(prefers-color-scheme: light)"
-    />
-    <meta
-      name="theme-color"
-      content="#0e0e0e"
-      media="(prefers-color-scheme: dark)"
-    />
+    {
+      /* Tracks the site's data-theme mechanism, not the OS setting: the
+         pre-paint script below and ThemeToggle rewrite `content` alongside
+         the attribute, so browser chrome always matches the page. */
+    }
+    <meta name="theme-color" content={THEME_COLORS.light} />
     <meta name="generator" content={Astro.generator} />
     <script type="application/ld+json" set:html={JSON.stringify(person)} />
     <Font cssVariable="--font-archivo" preload={[{ weight: 400 }]} />
-    <script is:inline define:vars={{ THEME_STORAGE_KEY, THEME_ATTRIBUTE }}>
+    <script
+      is:inline
+      define:vars={{ THEME_STORAGE_KEY, THEME_ATTRIBUTE, THEME_COLORS }}
+    >
       /* Must run before first paint so a stored "dark" choice never flashes
          light — hence inline (define:vars implies is:inline, which is the
          requirement here, not a drawback). */
       try {
         if (localStorage.getItem(THEME_STORAGE_KEY) === "dark") {
           document.documentElement.setAttribute(THEME_ATTRIBUTE, "dark");
+          document
+            .querySelector('meta[name="theme-color"]')
+            ?.setAttribute("content", THEME_COLORS.dark);
         }
       } catch {
         /* no storage access — stay on the light default */
