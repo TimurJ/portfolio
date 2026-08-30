@@ -1,3 +1,7 @@
 dist/
 .astro/
+.wrangler/
+test-results/
+playwright-report/
 pnpm-lock.yaml
+local-plans/

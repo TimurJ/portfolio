@@ -1,0 +1,35 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Grouped rather than one PR per package: routine minor/patch bumps carry
+    # the same risk whether they land together or apart, and a wall of open bot
+    # PRs reads as an unmaintained repo. Split by dependency-type rather than
+    # grouped as one, so a bump to something that ships to visitors (astro,
+    # tailwindcss) is legible as one from the PR title and can't ride along in a
+    # tooling PR. Majors stay ungrouped so a breaking change arrives on its own.
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      development-dependencies:
+        dependency-type: "development"
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+    groups:
+      actions:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]

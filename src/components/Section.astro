@@ -1,0 +1,46 @@
+---
+import type { ComponentProps } from "astro/types";
+
+import { type SectionId, nextOf, titleIdOf } from "../lib/nav";
+import ScrollCue from "./ScrollCue.astro";
+import SectionIntro from "./SectionIntro.astro";
+
+/* The shell every list section shares: intro, an evenly-distributed list of
+   rows, and the closing scroll cue. Intro props are picked off SectionIntro
+   rather than restated, so the two can't drift — except titleId, which the
+   shell derives from the section id rather than asking its consumer for. */
+type Props = Pick<
+  ComponentProps<typeof SectionIntro>,
+  "eyebrow" | "title" | "blurb" | "condensed"
+> & {
+  id: SectionId;
+};
+
+const { id, ...intro } = Astro.props;
+const titleId = titleIdOf(id);
+const nextHref = nextOf(id);
+---
+
+<section
+  id={id}
+  aria-labelledby={titleId}
+  class="mx-auto flex section-screen max-w-page flex-col"
+>
+  <SectionIntro titleId={titleId} {...intro} />
+  <div class="section-list"><slot /></div>
+  {
+    /* No cue on the last section in the order — there is nothing to cue on to.
+      `"" : undefined`, not the raw boolean: Astro renders `false` as
+      data-condensed="false", which would still match [data-condensed]. */
+  }
+  {
+    nextHref && (
+      <div
+        class="section-cue"
+        data-condensed={intro.condensed ? "" : undefined}
+      >
+        <ScrollCue href={nextHref} />
+      </div>
+    )
+  }
+</section>

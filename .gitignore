@@ -26,6 +26,13 @@ pnpm-debug.log*
 # wrangler local state
 .wrangler/
 
+# test artifacts
+test-results/
+playwright-report/
+
 # agent tooling
 .claude/
 .playwright-mcp/
+
+# local planning docs — working notes and roadmaps, not part of the artifact
+local-plans/

@@ -6,21 +6,16 @@ import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import Hero from "../components/Hero.astro";
 import Base from "../layouts/Base.astro";
-import { hrefOf, sections } from "../lib/nav";
-
-// Each section's scroll-cue target is the next entry in the shared order.
-const [, experienceLink, blogLink, contactLink] = sections;
+import { description, name, role } from "../lib/site";
 ---
 
-<Base
-  title="Timur Jalilov, Senior Frontend Engineer"
-  description="Senior Frontend Engineer in London building the frontends of real-time trading platforms — currently leading the team behind an energy-commodities trading terminal at Onyx Capital Group."
->
+<Base title={`${name}, ${role}`} description={description}>
   <Header />
-  <main>
-    <Hero nextHref={hrefOf(experienceLink.id)} />
-    <Experience nextHref={hrefOf(blogLink.id)} />
-    <Blog nextHref={hrefOf(contactLink.id)} />
+  {/* id: Header's skip link targets it. */}
+  <main id="main">
+    <Hero />
+    <Experience />
+    <Blog />
     <Contact />
   </main>
   <Footer />

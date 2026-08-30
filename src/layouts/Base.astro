@@ -1,17 +1,32 @@
 ---
 import { Font } from "astro:assets";
 
-import { THEME_ATTRIBUTE, THEME_STORAGE_KEY } from "../lib/theme";
+import { name, ogImage, role, socials } from "../lib/site";
+import { THEME_ATTRIBUTE, THEME_COLORS, THEME_STORAGE_KEY } from "../lib/theme";
 
 import "../styles/global.css";
 
 interface Props {
   title: string;
   description: string;
+  noindex?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, noindex = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+
+const person = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name,
+  url: Astro.site,
+  jobTitle: role,
+  sameAs: socials.map(({ href }) => href),
+};
+
+/* JSON.stringify does not escape `<` and set:html does no escaping of its own,
+   so a value containing `</script` would close the tag early. */
+const personLd = JSON.stringify(person).replaceAll("<", "\\u003c");
 ---
 
 <html lang="en">
@@ -20,29 +35,76 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {
+      /* A noindex page has no canonical URL worth asserting, and the two are
+         conflicting signals — so it gets one or the other, never both. */
+    }
+    {noindex && <meta name="robots" content="noindex" />}
+    {!noindex && <link rel="canonical" href={canonical} />}
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={name} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    {
-      /* og:image is deferred until a social card exists — see docs/launch-checklist.md. */
-    }
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={new URL(ogImage.src, Astro.site)} />
+    <meta property="og:image:width" content={String(ogImage.width)} />
+    <meta property="og:image:height" content={String(ogImage.height)} />
+    <meta property="og:image:alt" content={`${name} — ${role}`} />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    {
+      /* Tracks the site's data-theme mechanism, not the OS setting: the
+         pre-paint script below and ThemeToggle rewrite `content` alongside
+         the attribute, so browser chrome always matches the page. */
+    }
+    <meta name="theme-color" content={THEME_COLORS.light} />
     <meta name="generator" content={Astro.generator} />
+    {
+      /* Structured data only where it can be indexed — same reasoning as the
+         canonical above: describing an entity on a page that asks not to be
+         indexed is a conflicting signal. */
+    }
+    {
+      /* is:inline because this is data, not code: it must ship verbatim rather
+         than be bundled or processed. Astro infers that from the `type`
+         attribute anyway; saying it explicitly silences the hint. */
+    }
+    {
+      !noindex && (
+        <script is:inline type="application/ld+json" set:html={personLd} />
+      )
+    }
     <Font cssVariable="--font-archivo" preload={[{ weight: 400 }]} />
-    <script is:inline define:vars={{ THEME_STORAGE_KEY, THEME_ATTRIBUTE }}>
-      /* Must run before first paint so a stored "dark" choice never flashes
-         light — hence inline (define:vars implies is:inline, which is the
-         requirement here, not a drawback). */
+    <script
+      is:inline
+      define:vars={{ THEME_STORAGE_KEY, THEME_ATTRIBUTE, THEME_COLORS }}
+    >
+      /* Must beat the first paint, so it can't be a bundled module and can't
+         import lib/theme.ts — hence inline, with the constants passed in. Two
+         jobs: raise the data-js flag progressive enhancements gate on, then
+         resolve the theme (stored choice first, OS preference otherwise).
+         Rationale for both: docs/architecture.md, Decisions. Inline scripts
+         ship verbatim — unminified, comments and all — so keep this short. */
+      document.documentElement.dataset.js = "";
+
+      let stored = null;
       try {
-        if (localStorage.getItem(THEME_STORAGE_KEY) === "dark") {
-          document.documentElement.setAttribute(THEME_ATTRIBUTE, "dark");
-        }
+        /* Only this throws (blocked storage), so matchMedia stays outside. */
+        stored = localStorage.getItem(THEME_STORAGE_KEY);
       } catch {
-        /* no storage access — stay on the light default */
+        /* no storage access — fall through to the OS preference */
+      }
+      if (
+        stored === "dark" ||
+        (stored !== "light" &&
+          matchMedia("(prefers-color-scheme: dark)").matches)
+      ) {
+        document.documentElement.setAttribute(THEME_ATTRIBUTE, "dark");
+        document
+          .querySelector('meta[name="theme-color"]')
+          ?.setAttribute("content", THEME_COLORS.dark);
       }
     </script>
   </head>

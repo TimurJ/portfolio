@@ -3,9 +3,34 @@
 /_astro/*
   Cache-Control: public, max-age=31556952, immutable
 
+# Stable root assets (not content-hashed, but they only change with a
+# deliberate redesign): a week of caching beats the platform default of
+# revalidating on every request. Only /og.jpg can be busted by renaming, via
+# `ogImage.src` in src/lib/site.ts; the icons are fetched at fixed well-known
+# paths, so a redesign accepts up to a week of stale icons for return visitors.
+/og.jpg
+  Cache-Control: public, max-age=604800
+/favicon.svg
+  Cache-Control: public, max-age=604800
+/favicon.ico
+  Cache-Control: public, max-age=604800
+/apple-touch-icon.png
+  Cache-Control: public, max-age=604800
+
 # Security headers on every path (matching rules combine, so hashed assets get
-# these plus the cache rule above). A CSP is deferred until launch-freeze: the
-# HTML ships inline scripts/styles by design — see docs/launch-checklist.md.
+# these plus the cache rule above). No CSP ships, by decision rather than
+# oversight, and the reason is script-src rather than style-src: the built page
+# carries several inline <script> elements — the JSON-LD block, the pre-paint
+# theme script, and the component scripts Astro inlines because they are small.
+# Their contents, and so their hashes, change with any build that touches them,
+# and a flat _headers file cannot carry a per-build hash. That leaves
+# 'unsafe-inline', i.e. a policy that names the one directive that matters here
+# and then switches it off — no gain on a static site with no user input, no
+# third-party scripts and no cookies. (Styles are not the obstacle: the
+# component stylesheets are external /_astro/*.css links, and the only inline
+# <style> is the Fonts API @font-face block.) Revisit if any of those three
+# change; a CSP with frame-ancestors would then supersede the X-Frame-Options
+# line below.
 /*
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY

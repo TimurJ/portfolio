@@ -1,13 +1,7 @@
 ---
 import { iconAttrs } from "../lib/icons";
-import { type SectionHref, type SectionId } from "../lib/nav";
-import ScrollCue from "./ScrollCue.astro";
-import SectionIntro from "./SectionIntro.astro";
-
-interface Props {
-  /** Scroll-cue target: the next section, owned by the page's composition. */
-  nextHref: SectionHref;
-}
+import DotLabel from "./DotLabel.astro";
+import Section from "./Section.astro";
 
 type ExperienceEntry = {
   company: string;
@@ -20,7 +14,7 @@ type ExperienceEntry = {
 const experiences: ExperienceEntry[] = [
   {
     company: "Onyx Capital Group",
-    meta: ["2026 — Present", "UK, London"],
+    meta: ["2026 — Present", "London, UK"],
     description:
       "Own the frontend of an energy-commodities trading platform. I made the case to the CTO for a greenfield rebuild over an in-place upgrade, secured board approval, and built the architecture and core trading surface solo: order entry, price ladder, blotters, market overview and real-time charting. The team behind it went from one engineer to four, and I lead it.",
     pills: [
@@ -41,7 +35,7 @@ const experiences: ExperienceEntry[] = [
   {
     company: "Adaptive Financial Consulting",
     subtitle: "(Contracted to CME Group)",
-    meta: ["2021 — 2025", "UK, London"],
+    meta: ["2021 — 2025", "London, UK"],
     description:
       "Contracted to CME Group for the full engagement, building BrokerTec Quote, a multi-dealer RFQ platform for government bonds and repo. Built the real-time negotiation workflows, pricing grids and trade blotters, with live updates over WebSocket, and partnered with backend teams on API design for latency and fault tolerance. Supported live releases in a high-stakes trading environment, triaging issues in real time with the client.",
     pills: [
@@ -61,39 +55,63 @@ const experiences: ExperienceEntry[] = [
   },
 ];
 
-const sectionId: SectionId = "experience";
-const { nextHref } = Astro.props;
-
 const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
+
+/* Ties each row's read-more button to the paragraph it expands, and to the
+   company heading that says which row it belongs to. Both rows would otherwise
+   be an identical bare "Read more" in a screen reader's button list, with
+   nothing connecting aria-expanded to what it governs.
+
+   The company goes on aria-describedby rather than aria-label: the button's
+   name has to stay the visible "Read more"/"Show less" (the labels swap by
+   display, so only the shown one is in the accessible name), and an aria-label
+   would freeze it at one state and break voice control's match on the other.
+
+   Keyed by row index, not by a slug of the company: two rows at the same
+   employer (two roles, which the `subtitle` field already anticipates) would
+   share a slug, and row two's aria-controls would then resolve to row one's
+   paragraph — silently, since axe's only live duplicate-id rule is
+   `duplicate-id-aria`, which is reviewOnFail and so reports as `incomplete`
+   rather than a violation the suite asserts on. */
+const descriptionId = (index: number) => `exp-${index}-desc`;
+const headingId = (index: number) => `exp-${index}-name`;
 ---
 
-<section id={sectionId} class="mx-auto flex section-screen max-w-page flex-col">
-  <SectionIntro
-    condensed
-    eyebrow="Experiences"
-    title="Explore My Engineering Journey"
-    blurb="Five years building trading systems, from a multi-dealer RFQ platform for government bonds and repo at CME Group to a greenfield energy-commodities terminal I now own end to end."
-  />
-  <div class="section-list">
-    {
-      experiences.map(({ company, subtitle, meta, description, pills }) => (
+<Section
+  condensed
+  id="experience"
+  eyebrow="Experience"
+  title="Explore My Engineering Journey"
+  blurb="Five years building trading systems, from a multi-dealer RFQ platform for government bonds and repo at CME Group to a greenfield energy-commodities terminal I now own end to end."
+>
+  {
+    experiences.map(
+      ({ company, subtitle, meta, description, pills }, index) => (
         <article class="exp-row grid items-start border-b border-hair">
           <div class="exp-head flex flex-col">
-            <h3 class={nameClass}>{company}</h3>
+            <h3 id={headingId(index)} class={nameClass}>
+              {company}
+            </h3>
             {subtitle && <span class={nameClass}>{subtitle}</span>}
-            {meta.map((item) => (
-              <span class="exp-meta inline-flex items-center gap-[9px] text-muted">
-                <span class="size-1.5 flex-none rounded-full bg-dot" />
-                {item}
-              </span>
-            ))}
+            <div class="exp-meta">
+              {meta.map((item) => (
+                <DotLabel class="text-muted">{item}</DotLabel>
+              ))}
+            </div>
           </div>
           <div class="flex min-w-0 flex-col">
-            <p class="exp-desc text-pretty text-muted">{description}</p>
+            <p
+              id={descriptionId(index)}
+              class="exp-desc text-pretty text-muted"
+            >
+              {description}
+            </p>
             <button
               type="button"
               aria-expanded="false"
-              class="read-more my-2.5 cursor-pointer items-center gap-[7px] self-start border-b border-accent-text/40 pb-0.5 text-[13px] tracking-[0.02em] text-accent-text hover:border-accent-text"
+              aria-controls={descriptionId(index)}
+              aria-describedby={headingId(index)}
+              class="read-more my-2.5 cursor-pointer items-center gap-[7px] self-start border-b border-accent-text/40 pb-0.5 text-meta tracking-[0.02em] text-accent-text hover:border-accent-text"
             >
               <span class="label-more">Read more</span>
               <span class="label-less">Show less</span>
@@ -110,19 +128,14 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
             ))}
           </div>
         </article>
-      ))
-    }
-  </div>
-  <div class="exp-cue section-cue">
-    <ScrollCue href={nextHref} />
-  </div>
-</section>
+      ),
+    )
+  }
+</Section>
 
 <style>
-  /* Per-tier rules live here per the styling policy (docs/architecture.md);
-     1100/700/460 are --breakpoint-laptop/--breakpoint-phone/
-     --breakpoint-phone-sm written out; 1000 is this section's own
-     mid-laptop tier. */
+  /* Tier rules per docs/architecture.md; 1100/700/460 =
+     laptop/phone/phone-sm, and 1000 is this section's own mid-laptop tier. */
 
   .exp-row {
     grid-template-columns: minmax(0, 10fr) minmax(0, 12fr) minmax(0, 9fr);
@@ -132,14 +145,20 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
   .exp-head {
     gap: 8px;
   }
+  /* Scoped classes can't reach into DotLabel, so the meta rows size by
+     inheritance. The wrapper generates no box (display: contents), so they
+     stay direct flex items of .exp-head and its gap still spaces them —
+     sizing them here rather than on .exp-head keeps the meta and the
+     .exp-name headings independent. */
+  .exp-meta {
+    display: contents;
+    font-size: var(--text-meta);
+  }
   .exp-name {
     font-size: clamp(20px, 2vw, 30px);
   }
-  .exp-meta {
-    font-size: 13px;
-  }
   .exp-desc {
-    font-size: 15px;
+    font-size: var(--text-body);
     line-height: 1.55;
   }
   .exp-pills {
@@ -221,6 +240,12 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
     }
     .exp-desc {
       font-size: 13px;
+    }
+    /* The clamp and its toggle are one progressive enhancement, so they hang
+       together off the "scripts ran" flag Base.astro sets before first paint:
+       without JS nothing can reopen a clamped description, so the text stays
+       whole and the dead toggle never appears. */
+    :global(html[data-js]) .exp-desc {
       /* lh derives the three-line clamp from the element's real line-height
          (its floor sits below the mask-image floor accepted below). */
       max-height: 3lh;
@@ -235,12 +260,28 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
         transparent 100%
       );
     }
-    .exp-row[data-open] .exp-desc {
+    :global(html[data-js]) .exp-row[data-open] .exp-desc {
       max-height: none;
       mask-image: none;
     }
-    .read-more {
+    :global(html[data-js]) .read-more {
       display: inline-flex;
+    }
+    /* A description that already fits the clamp has nothing to reveal, so its
+       toggle would be a control that changes nothing. The script measures and
+       sets data-fits; see the comment there. */
+    :global(html[data-js]) .exp-row[data-fits] .read-more {
+      display: none;
+    }
+    /* The clamp above stays unconditional even here, because that is what keeps
+       the measurement reversible: with max-height lifted, scrollHeight and
+       clientHeight agree whatever the text says, so a row that once fit could
+       never be re-clamped when the viewport narrows. On a fitting row the two
+       are inert anyway. The fade is not — its ramp is measured from the box's
+       own bottom, so on a box shorter than the clamp it lands on a real final
+       line and advertises content that isn't there. */
+    :global(html[data-js]) .exp-row[data-fits] .exp-desc {
+      mask-image: none;
     }
     .exp-row[data-open] .read-more svg {
       transform: rotate(180deg);
@@ -265,9 +306,6 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
     .exp-pills {
       gap: 5px;
     }
-    .exp-cue {
-      padding-block: 10px 24px;
-    }
   }
 </style>
 
@@ -277,10 +315,59 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
      explicit pixel height: expand sets it, then clears it once the transition
      lands; collapse sets it, then clears it next frame so the CSS clamp value
      becomes the transition target. */
-  document.querySelectorAll<HTMLElement>(".exp-row").forEach((row) => {
-    const button = row.querySelector<HTMLButtonElement>(".read-more");
-    const description = row.querySelector<HTMLParagraphElement>(".exp-desc");
-    if (!button || !description) return;
+  const rows = [...document.querySelectorAll<HTMLElement>(".exp-row")].flatMap(
+    (row) => {
+      const button = row.querySelector<HTMLButtonElement>(".read-more");
+      const description = row.querySelector<HTMLParagraphElement>(".exp-desc");
+      return button && description ? [{ row, button, description }] : [];
+    },
+  );
+
+  /* Whether a row has anything to reveal is a property of the rendered text,
+     not of the content, so it is measured rather than assumed: a description
+     short enough to fit the clamp would otherwise ship a toggle that flips
+     aria-expanded and changes nothing on screen. scrollHeight vs clientHeight
+     asks the clamp for its own answer instead of re-deriving the `3` that
+     `max-height: 3lh` owns. Open rows are skipped, since mid-expand the two
+     heights agree and would read as "fits"; the re-runs below cover the two
+     things that move the answer. */
+  const syncFits = () => {
+    for (const { row, description } of rows) {
+      if (row.hasAttribute("data-open")) continue;
+      row.toggleAttribute(
+        "data-fits",
+        description.scrollHeight <= description.clientHeight,
+      );
+    }
+  };
+  syncFits();
+
+  /* The answer depends on the face the text is rendered in, and this module is
+     deferred, so the first pass can measure the swap fallback. Measured across
+     24 lengths straddling the three-line boundary: the verdict flips at two of
+     them. Archivo is the narrower face, so a stale verdict leaves a button on a
+     row that no longer needs one, rather than hiding one a clamped row does —
+     the benign direction, and cheap enough to close anyway. A ResizeObserver
+     could not: the box is pinned at 3lh, so a swap moves only scrollHeight and
+     changes no observed size. */
+  document.fonts.ready.then(syncFits);
+
+  /* The clamp only applies below the phone tier, so a width change can flip the
+     answer too. Coalesced per frame like Header's nav sync, because resize
+     fires continuously through a window drag — and on mobile through the scroll
+     that collapses browser chrome, which is the tier where the clamp is live —
+     while scrollHeight/clientHeight force layout on every read. */
+  let fitsQueued = false;
+  window.addEventListener("resize", () => {
+    if (fitsQueued) return;
+    fitsQueued = true;
+    requestAnimationFrame(() => {
+      fitsQueued = false;
+      syncFits();
+    });
+  });
+
+  for (const { row, button, description } of rows) {
     button.addEventListener("click", () => {
       const willOpen = !row.hasAttribute("data-open");
       description.style.maxHeight = `${description.scrollHeight}px`;
@@ -302,5 +389,5 @@ const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
       row.toggleAttribute("data-open", willOpen);
       button.setAttribute("aria-expanded", String(willOpen));
     });
-  });
+  }
 </script>

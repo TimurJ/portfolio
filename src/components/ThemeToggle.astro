@@ -10,7 +10,7 @@ import { iconAttrs } from "../lib/icons";
 <button
   type="button"
   data-theme-toggle
-  class="flex cursor-pointer items-center gap-2 text-[13px] hover:text-accent-text max-phone-sm:-m-[13px] max-phone-sm:p-[13px]"
+  class="flex cursor-pointer items-center gap-2 text-meta hover:text-accent-text"
 >
   <svg {...iconAttrs(17, 1.6)} class="dark:hidden">
     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
@@ -29,17 +29,62 @@ import { iconAttrs } from "../lib/icons";
   </span>
 </button>
 
+<style>
+  /* Tier rule per docs/architecture.md; 460 is the phone-sm tier. The label
+     goes sr-only there, so pad the button out to a ~44px tap target and
+     negative-margin it back, leaving the header row's layout unchanged. */
+  @media (width < 460px) {
+    button {
+      margin: -13px;
+      padding: 13px;
+    }
+  }
+</style>
+
 <script>
-  import { THEME_ATTRIBUTE, THEME_STORAGE_KEY } from "../lib/theme";
+  import {
+    THEME_ATTRIBUTE,
+    THEME_COLORS,
+    THEME_STORAGE_KEY,
+  } from "../lib/theme";
 
   /* The --theme-fade transition in global.css applies only while
      .theme-switching is on the root, so it runs exactly for the flip and
      never on hover or load. The removal timeout derives from the same token
      (plus a settle margin) so it always outlasts the fade. */
   const root = document.documentElement;
+  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
   const fadeMs =
     parseFloat(getComputedStyle(root).getPropertyValue("--theme-fade")) || 500;
-  let switchTimeout: ReturnType<typeof setTimeout>;
+  let switchTimeout: ReturnType<typeof setTimeout> | undefined;
+
+  /* The three things a flip touches, in one place: the attribute the CSS keys
+     off, the browser-chrome colour, and the class that arms the fade. Shared by
+     the button and the OS-preference listener so the two can't drift. */
+  const applyTheme = (next: "light" | "dark") => {
+    root.classList.add("theme-switching");
+    clearTimeout(switchTimeout);
+    switchTimeout = setTimeout(
+      () => root.classList.remove("theme-switching"),
+      fadeMs + 60,
+    );
+    if (next === "dark") {
+      root.setAttribute(THEME_ATTRIBUTE, "dark");
+    } else {
+      root.removeAttribute(THEME_ATTRIBUTE);
+    }
+    themeColorMeta?.setAttribute("content", THEME_COLORS[next]);
+  };
+
+  /* Mirrors the pre-paint script's read in Base: a blocked localStorage reads
+     as "no choice made", which is the answer that lets the OS decide. */
+  const storedTheme = () => {
+    try {
+      return localStorage.getItem(THEME_STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  };
 
   document
     .querySelectorAll<HTMLButtonElement>("[data-theme-toggle]")
@@ -47,22 +92,26 @@ import { iconAttrs } from "../lib/icons";
       button.addEventListener("click", () => {
         const next =
           root.getAttribute(THEME_ATTRIBUTE) === "dark" ? "light" : "dark";
-        root.classList.add("theme-switching");
-        clearTimeout(switchTimeout);
-        switchTimeout = setTimeout(
-          () => root.classList.remove("theme-switching"),
-          fadeMs + 60,
-        );
-        if (next === "dark") {
-          root.setAttribute(THEME_ATTRIBUTE, "dark");
-        } else {
-          root.removeAttribute(THEME_ATTRIBUTE);
-        }
+        applyTheme(next);
         try {
           localStorage.setItem(THEME_STORAGE_KEY, next);
         } catch {
-          // no storage access — the choice simply won't persist
+          /* no storage access — the choice simply won't persist */
         }
       });
     });
+
+  /* Base resolves the OS preference once, before first paint. Without this the
+     resolution would stand until a reload, so a visitor who has never chosen
+     stays light through their machine's sunset switch to dark. A stored choice
+     outranks the OS, exactly as it does on load — and once someone has used the
+     toggle they have made that choice, so this stops applying to them. */
+  matchMedia("(prefers-color-scheme: dark)").addEventListener(
+    "change",
+    (event) => {
+      const stored = storedTheme();
+      if (stored === "dark" || stored === "light") return;
+      applyTheme(event.matches ? "dark" : "light");
+    },
+  );
 </script>

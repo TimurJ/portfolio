@@ -1,5 +1,5 @@
-/* Style system derived from the Claude Design portfolio
-   (claude.ai/design project c3f43bbc-b6d6-42de-8ccd-dbda2639dc1b, Portfolio.dc.html).
+/* Style system derived from the Claude Design portfolio source
+   (Portfolio.dc.html), which is private to the author — see docs/design.md.
    Token names and values are verbatim from the design. Light is the default
    theme; dark applies via data-theme="dark" on the root element (the design
    persists the choice in localStorage under "tj-portfolio-theme"). */
@@ -26,6 +26,9 @@
   /* Keep UA-rendered surfaces (scrollbars, form controls, overscroll) on the
      page's palette; the dark block flips it with the tokens. */
   color-scheme: light;
+  /* Both --bg values are mirrored by THEME_COLORS in lib/theme.ts, which feeds
+     the theme-color meta (a <meta content> can't read a custom property).
+     Change them together. */
   --bg: #ffffff;
   --ink: #1c1c1c;
   --muted: #6a6a6a;
@@ -33,10 +36,19 @@
   --hair: rgba(28, 28, 28, 0.12);
   --accent: #d80000;
   --accent-text: #b40000;
+  /* Hover background under white text (Contact's CTA). The one accent that is
+     not theme-conditional: it clears 4.5:1 against white in both themes
+     (7.14:1), which --accent-text does not. That token is tuned as *text* on
+     --bg, so in dark mode it is lighter than --accent — reusing it as a hover
+     background there dropped white text to 3.08:1. */
+  --accent-hover: #b40000;
   --dot: #d80000;
-  /* Dim levels for text on the inverted footer panel (bg-ink). Dark mode
-     lifts them: the panel turns light there, and 50% ink on it falls to
-     ~3.5:1 contrast. */
+  /* Values for text on the inverted footer panel (bg-ink), all restated by the
+     dark block because the panel turns light there. --accent-on-ink is the
+     accent of the *opposite* theme: plain --accent on ink is 3.18:1 light and
+     4.23:1 dark, while this is 5.54:1 and 6.10:1. The dim levels carry 50%
+     ink, which on the dark panel would fall to ~3.5:1. */
+  --accent-on-ink: #ff5a4d;
   --on-ink-dim: 0.5;
   --on-ink-mid: 0.75;
 }
@@ -51,6 +63,7 @@
   --accent: #e01000;
   --accent-text: #ff5a4d;
   --dot: #e01000;
+  --accent-on-ink: #b40000;
   --on-ink-dim: 0.68;
   --on-ink-mid: 0.88;
 }
@@ -66,22 +79,34 @@
   --color-hair: var(--hair);
   --color-accent: var(--accent);
   --color-accent-text: var(--accent-text);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-on-ink: var(--accent-on-ink);
   --color-dot: var(--dot);
   --font-sans: var(--font-archivo);
 }
 
-/* Layout constants from the design: the responsive tiers (exposed as
-   max-laptop:/max-tablet:/max-phone:/max-phone-sm: variants for markup;
-   media queries — here and in scoped styles — write the ranges out, with a
-   comment naming the tier) and the page container width (max-w-page).
-   Static values, so they live in a plain @theme block — media queries can't
-   read CSS variables. */
+/* Layout constants from the design: the responsive tiers and the page
+   container width (max-w-page). Defining a tier also exposes a max-*: variant
+   for markup, but the styling policy keeps width rules out of markup, so those
+   variants are all but unused; the tiers earn their keep as the named scale
+   that the media queries here and in scoped styles write out longhand, with a
+   comment naming the tier. Static values, so they live in a plain @theme block
+   — media queries can't read CSS variables. */
 @theme {
   --breakpoint-laptop: 1100px;
   --breakpoint-tablet: 900px;
   --breakpoint-phone: 700px;
   --breakpoint-phone-sm: 460px;
   --container-page: 1600px;
+}
+
+/* The small type scale (text-meta, text-body). `static`, not plain @theme:
+   Tailwind never scans Astro scoped <style> blocks, so without it the vars
+   their var() references consume would vanish with the last markup use —
+   failing as a silently inherited font-size, not an error. */
+@theme static {
+  --text-meta: 13px;
+  --text-body: 15px;
 }
 
 /* Shared section gutter: the horizontal inset every section's scoped styles
@@ -100,11 +125,11 @@
 }
 
 /* A section's viewport-filling height under the header. Height only: the
-   page-width cap is the markup pair `mx-auto max-w-page` (header and sections
-   alike), so a full-bleed section like Contact's footer panel can take the
-   height without it. svh: equals vh on desktop, and stays stable on mobile
-   when the browser chrome collapses (dvh would resize the section
-   mid-scroll). */
+   page-width cap is the markup pair `mx-auto max-w-page`, carried by each
+   consumer rather than bundled in here, so a full-bleed section could take the
+   height without inheriting a cap it doesn't want. svh: equals vh on desktop,
+   and stays stable on mobile when the browser chrome collapses (dvh would
+   resize the section mid-scroll). */
 @utility section-screen {
   min-height: calc(100svh - var(--headerH));
 }
@@ -126,6 +151,13 @@
   padding-block: 22px;
   @media (width < 700px) {
     padding-block: 14px 24px;
+  }
+  /* 460 is --breakpoint-phone-sm. A condensed section (one that must fit a
+     small-phone screen) tightens its cue with its intro. */
+  @media (width < 460px) {
+    &[data-condensed] {
+      padding-block: 10px 24px;
+    }
   }
 }
 

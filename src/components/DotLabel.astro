@@ -1,0 +1,26 @@
+---
+interface Props {
+  /** The intro eyebrow's larger mark; rows carry the small one. */
+  large?: boolean;
+  /** Width-invariant utilities only; scoped classes don't cross the
+      component boundary (docs/architecture.md, "Shared components"). */
+  class?: string;
+}
+
+const { large = false, class: className } = Astro.props;
+---
+
+<span
+  class:list={[
+    "inline-flex items-center",
+    large ? "gap-2.5" : "gap-[9px]",
+    className,
+  ]}
+>
+  <span
+    class:list={[
+      large ? "size-2" : "size-1.5",
+      "flex-none rounded-full bg-dot",
+    ]}></span>
+  <slot />
+</span>
