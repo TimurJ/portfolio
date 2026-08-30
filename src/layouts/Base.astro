@@ -84,27 +84,21 @@ const personLd = JSON.stringify(person).replaceAll("<", "\\u003c");
       /* Must beat the first paint, so it can't be a bundled module and can't
          import lib/theme.ts — hence inline, with the constants passed in. Two
          jobs: raise the data-js flag progressive enhancements gate on, then
-         resolve the theme (stored choice first, OS preference otherwise).
-         Rationale for both: docs/architecture.md, Decisions. Inline scripts
-         ship verbatim — unminified, comments and all — so keep this short. */
+         apply a stored dark choice before anything paints. Light is the
+         default and the OS is never consulted. Rationale for both:
+         docs/architecture.md, Decisions. Inline scripts ship verbatim —
+         unminified, comments and all — so keep this short. */
       document.documentElement.dataset.js = "";
 
-      let stored = null;
       try {
-        /* Only this throws (blocked storage), so matchMedia stays outside. */
-        stored = localStorage.getItem(THEME_STORAGE_KEY);
+        if (localStorage.getItem(THEME_STORAGE_KEY) === "dark") {
+          document.documentElement.setAttribute(THEME_ATTRIBUTE, "dark");
+          document
+            .querySelector('meta[name="theme-color"]')
+            ?.setAttribute("content", THEME_COLORS.dark);
+        }
       } catch {
-        /* no storage access — fall through to the OS preference */
-      }
-      if (
-        stored === "dark" ||
-        (stored !== "light" &&
-          matchMedia("(prefers-color-scheme: dark)").matches)
-      ) {
-        document.documentElement.setAttribute(THEME_ATTRIBUTE, "dark");
-        document
-          .querySelector('meta[name="theme-color"]')
-          ?.setAttribute("content", THEME_COLORS.dark);
+        /* no storage access — light, as if no choice had been made */
       }
     </script>
   </head>

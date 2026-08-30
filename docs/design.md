@@ -26,7 +26,7 @@ Tokens are exposed as Tailwind utilities via `@theme inline` (`bg-bg`, `text-ink
 
 ## Theming
 
-- Light is the design's default; dark applies via `data-theme="dark"` on the root element. The implementation deliberately defaults to the OS preference instead, treating a stored `"light"` as the only opt-out — see the decision record in [architecture.md](architecture.md).
+- Light is the design's default; dark applies via `data-theme="dark"` on the root element. The implementation follows it: the OS `prefers-color-scheme` is not consulted, so dark comes only from a stored choice — see the decision record in [architecture.md](architecture.md).
 - Tailwind's `dark:` variant is bound to that attribute (not `prefers-color-scheme`).
 - The design persists the user's choice in localStorage under `tj-portfolio-theme` and animates the flip with a ~260ms color transition. The implementation deliberately slows this to 500ms (`--theme-fade`) — see the decision record in [architecture.md](architecture.md).
 
