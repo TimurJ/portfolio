@@ -81,12 +81,21 @@ const railLabelClass =
       /* Decorative: the adjacent <h1> already names the subject, so any alt
         here repeats it. */
     }
+    {
+      /* The one width-dependent value in this file's markup, because `sizes`
+        is an attribute the browser reads before any stylesheet applies — it
+        cannot move into the scoped block below. It follows that block's tier
+        vocabulary anyway: 900/700 = tablet/phone, 1600 = the page cap, and the
+        same exclusive range syntax, so the widths it claims change at exactly
+        the pixel the media queries below change at. `max-width` would be
+        inclusive and disagree at both boundaries. */
+    }
     <Image
       src={portrait}
       alt=""
       layout="full-width"
       priority
-      sizes="(max-width: 700px) 100vw, (max-width: 900px) 50vw, (max-width: 1600px) 56vw, 896px"
+      sizes="(width < 700px) 100vw, (width < 900px) 50vw, (width < 1600px) 56vw, 896px"
       class="absolute w-full"
     />
   </div>

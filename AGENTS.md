@@ -27,4 +27,5 @@ Tier rules name the tier in a comment (`900/700 = tablet/phone`) rather than spe
 `docs/architecture.md` documents the project structure — update it in the same PR as any change to
 component boundaries, styling policy, or client scripts. Its Decisions section records refactors
 deliberately _not_ taken; read it before proposing one. `docs/design.md` records the design source
-and every deliberate deviation from it.
+and its token and type system, and names the deviations from it; the reasoning behind each one lives
+in architecture.md's Decisions, so the two are read together rather than either being complete alone.

@@ -4,17 +4,23 @@ The site design lives in Claude Design as `Portfolio.dc.html` ("Timur Jalilov, S
 
 ## Tokens
 
-| Token           | Light                         | Dark                    | Role                                                                                                                         |
-| :-------------- | :---------------------------- | :---------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| `--bg`          | `#ffffff`                     | `#0e0e0e`               | Page ground                                                                                                                  |
-| `--ink`         | `#1c1c1c`                     | `#ededed`               | Text / primary ink                                                                                                           |
-| `--muted`       | `#6a6a6a`                     | `#a2a2a2`               | Secondary text                                                                                                               |
-| `--line`        | `rgba(28,28,28,.35)`          | `rgba(237,237,237,.32)` | Strong rules, borders                                                                                                        |
-| `--hair`        | `rgba(28,28,28,.12)`          | `rgba(237,237,237,.13)` | Hairline rules                                                                                                               |
-| `--accent`      | `#d80000`                     | `#e01000`               | Red fills (dots, buttons)                                                                                                    |
-| `--accent-text` | `#b40000`                     | `#ff5a4d`               | Red used as text / hover ink                                                                                                 |
-| `--dot`         | `#d80000`                     | `#e01000`               | Marker dots                                                                                                                  |
-| `--img`         | `grayscale(1) contrast(1.05)` | same                    | Photography filter — not ported: the portrait ships pre-desaturated (`assets/portrait-bw.webp`), so nothing would consume it |
+| Token             | Light                         | Dark                    | Role                                                                                                                         |
+| :---------------- | :---------------------------- | :---------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| `--bg`            | `#ffffff`                     | `#0e0e0e`               | Page ground                                                                                                                  |
+| `--ink`           | `#1c1c1c`                     | `#ededed`               | Text / primary ink                                                                                                           |
+| `--muted`         | `#6a6a6a`                     | `#a2a2a2`               | Secondary text                                                                                                               |
+| `--line`          | `rgba(28,28,28,.35)`          | `rgba(237,237,237,.32)` | Strong rules, borders                                                                                                        |
+| `--hair`          | `rgba(28,28,28,.12)`          | `rgba(237,237,237,.13)` | Hairline rules                                                                                                               |
+| `--accent`        | `#d80000`                     | `#e01000`               | Red fills (dots, buttons)                                                                                                    |
+| `--accent-text`   | `#b40000`                     | `#ff5a4d`               | Red used as text / hover ink                                                                                                 |
+| `--dot`           | `#d80000`                     | `#e01000`               | Marker dots                                                                                                                  |
+| `--accent-hover`  | `#b40000`                     | same                    | Red fill under white text on hover — **added**                                                                               |
+| `--accent-on-ink` | `#ff5a4d`                     | `#b40000`               | Red used as text on the inverted footer panel — **added**                                                                    |
+| `--on-ink-dim`    | `0.5`                         | `0.68`                  | Dim text opacity on the inverted footer panel — **added**                                                                    |
+| `--on-ink-mid`    | `0.75`                        | `0.88`                  | Mid text opacity on the inverted footer panel — **added**                                                                    |
+| `--img`           | `grayscale(1) contrast(1.05)` | same                    | Photography filter — not ported: the portrait ships pre-desaturated (`assets/portrait-bw.webp`), so nothing would consume it |
+
+The four tokens marked **added** are deliberate deviations: the design has one accent per theme and one flat opacity, and both fall below 4.5:1 in places it does not distinguish — accent-as-hover-background under white text, accent-as-text on the inverted panel, and dimmed ink on that panel once it turns light in dark mode. Each is a contrast-tuned value for a context the design's single token cannot serve, not a new colour in the palette. The ratios and the reasoning are in the decision record in [architecture.md](architecture.md).
 
 Tokens are exposed as Tailwind utilities via `@theme inline` (`bg-bg`, `text-ink`, `text-muted`, `border-line`, `border-hair`, `bg-accent`, `text-accent-text`, …).
 

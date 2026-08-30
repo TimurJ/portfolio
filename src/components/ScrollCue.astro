@@ -1,15 +1,11 @@
 ---
-import { type SectionHref } from "../lib/nav";
+import type { SectionHref } from "../lib/nav";
 
 interface Props {
   href: SectionHref;
-  /** Extra utilities for the consumer's context (placement, responsive size). */
-  class?: string;
 }
 
-const { href, class: className } = Astro.props;
+const { href } = Astro.props;
 ---
 
-<a href={href} class:list={["text-meta text-muted", className]}>
-  Scroll down ↓
-</a>
+<a href={href} class="text-meta text-muted"> Scroll down ↓ </a>

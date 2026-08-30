@@ -267,6 +267,22 @@ const headingId = (index: number) => `exp-${index}-name`;
     :global(html[data-js]) .read-more {
       display: inline-flex;
     }
+    /* A description that already fits the clamp has nothing to reveal, so its
+       toggle would be a control that changes nothing. The script measures and
+       sets data-fits; see the comment there. */
+    :global(html[data-js]) .exp-row[data-fits] .read-more {
+      display: none;
+    }
+    /* The clamp above stays unconditional even here, because that is what keeps
+       the measurement reversible: with max-height lifted, scrollHeight and
+       clientHeight agree whatever the text says, so a row that once fit could
+       never be re-clamped when the viewport narrows. On a fitting row the two
+       are inert anyway. The fade is not — its ramp is measured from the box's
+       own bottom, so on a box shorter than the clamp it lands on a real final
+       line and advertises content that isn't there. */
+    :global(html[data-js]) .exp-row[data-fits] .exp-desc {
+      mask-image: none;
+    }
     .exp-row[data-open] .read-more svg {
       transform: rotate(180deg);
     }
@@ -299,10 +315,59 @@ const headingId = (index: number) => `exp-${index}-name`;
      explicit pixel height: expand sets it, then clears it once the transition
      lands; collapse sets it, then clears it next frame so the CSS clamp value
      becomes the transition target. */
-  document.querySelectorAll<HTMLElement>(".exp-row").forEach((row) => {
-    const button = row.querySelector<HTMLButtonElement>(".read-more");
-    const description = row.querySelector<HTMLParagraphElement>(".exp-desc");
-    if (!button || !description) return;
+  const rows = [...document.querySelectorAll<HTMLElement>(".exp-row")].flatMap(
+    (row) => {
+      const button = row.querySelector<HTMLButtonElement>(".read-more");
+      const description = row.querySelector<HTMLParagraphElement>(".exp-desc");
+      return button && description ? [{ row, button, description }] : [];
+    },
+  );
+
+  /* Whether a row has anything to reveal is a property of the rendered text,
+     not of the content, so it is measured rather than assumed: a description
+     short enough to fit the clamp would otherwise ship a toggle that flips
+     aria-expanded and changes nothing on screen. scrollHeight vs clientHeight
+     asks the clamp for its own answer instead of re-deriving the `3` that
+     `max-height: 3lh` owns. Open rows are skipped, since mid-expand the two
+     heights agree and would read as "fits"; the re-runs below cover the two
+     things that move the answer. */
+  const syncFits = () => {
+    for (const { row, description } of rows) {
+      if (row.hasAttribute("data-open")) continue;
+      row.toggleAttribute(
+        "data-fits",
+        description.scrollHeight <= description.clientHeight,
+      );
+    }
+  };
+  syncFits();
+
+  /* The answer depends on the face the text is rendered in, and this module is
+     deferred, so the first pass can measure the swap fallback. Measured across
+     24 lengths straddling the three-line boundary: the verdict flips at two of
+     them. Archivo is the narrower face, so a stale verdict leaves a button on a
+     row that no longer needs one, rather than hiding one a clamped row does —
+     the benign direction, and cheap enough to close anyway. A ResizeObserver
+     could not: the box is pinned at 3lh, so a swap moves only scrollHeight and
+     changes no observed size. */
+  document.fonts.ready.then(syncFits);
+
+  /* The clamp only applies below the phone tier, so a width change can flip the
+     answer too. Coalesced per frame like Header's nav sync, because resize
+     fires continuously through a window drag — and on mobile through the scroll
+     that collapses browser chrome, which is the tier where the clamp is live —
+     while scrollHeight/clientHeight force layout on every read. */
+  let fitsQueued = false;
+  window.addEventListener("resize", () => {
+    if (fitsQueued) return;
+    fitsQueued = true;
+    requestAnimationFrame(() => {
+      fitsQueued = false;
+      syncFits();
+    });
+  });
+
+  for (const { row, button, description } of rows) {
     button.addEventListener("click", () => {
       const willOpen = !row.hasAttribute("data-open");
       description.style.maxHeight = `${description.scrollHeight}px`;
@@ -324,5 +389,5 @@ const headingId = (index: number) => `exp-${index}-name`;
       row.toggleAttribute("data-open", willOpen);
       button.setAttribute("aria-expanded", String(willOpen));
     });
-  });
+  }
 </script>

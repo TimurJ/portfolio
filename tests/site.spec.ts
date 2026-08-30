@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 import { hrefOf, sections, titleIdOf } from "../src/lib/nav";
 import {
@@ -12,6 +12,49 @@ import {
    at runtime, plus an axe scan in both themes. The four client scripts and the
    landmark structure are invisible to the other gates (format, lint, typecheck,
    build), so this file is the only thing that can catch them regressing. */
+
+/* Seeded into storage before first paint rather than set by clicking the
+   toggle, so a scan can't catch the page mid-fade. */
+const seedDark = (page: Page) =>
+  page.addInitScript(
+    (key) => localStorage.setItem(key, "dark"),
+    THEME_STORAGE_KEY,
+  );
+
+/* Click the first Experience row open and assert the description really grew.
+
+   State alone is not enough: delete the [data-open] max-height rule and the
+   click still sets an inline max-height, still flips aria-expanded and still
+   swaps the label, so every state assertion stays green while the text is
+   clipped.
+
+   Height alone is not enough either, and this was measured rather than assumed
+   — two polls for "taller than before" were tried and both passed against the
+   deleted rule. The row animates twice: out to the inline pixel height, then,
+   once that style is cleared, back down to the clamp. Any poll for a taller box
+   catches one of those frames and goes green.
+
+   The settled computed value is what has no transient: with the rule the open
+   row resolves to max-height: none, and toHaveCSS retries until the inline
+   style is gone and it does. Without it, it resolves to the clamp forever.
+   `none` also means nothing is left to animate toward, so the box has reached
+   full height and can be measured directly. */
+const expectRowExpands = async (page: Page) => {
+  const description = page.locator(".exp-row").first().locator(".exp-desc");
+  const clamped = (await description.boundingBox())?.height ?? 0;
+  expect(clamped).toBeGreaterThan(0);
+
+  await page
+    .locator(".exp-row")
+    .first()
+    .getByRole("button", { name: "Read more" })
+    .click();
+
+  await expect(description).toHaveCSS("max-height", "none");
+  expect((await description.boundingBox())?.height ?? 0).toBeGreaterThan(
+    clamped,
+  );
+};
 
 test("loads with no console errors", async ({ page }) => {
   /* Attached before goto, or the scripts have already run by the time we
@@ -175,28 +218,99 @@ test.describe("on a phone viewport", () => {
     await expect(toggle).toBeVisible();
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
 
-    await toggle.click();
+    await expectRowExpands(page);
 
-    /* Assert state, never height: the row animates max-height for 650ms and
-       clears the inline style on transitionend. The "Show less" name is itself
-       proof the row opened — the label swap is driven by [data-open], so the
-       accessible name only resolves once the attribute is set. */
+    /* The "Show less" name is itself proof the row opened — the label swap is
+       driven by [data-open], so the accessible name only resolves once the
+       attribute is set. */
     await expect(
       row.getByRole("button", { name: "Show less" }),
     ).toHaveAttribute("aria-expanded", "true");
   });
+
+  test("read more still expands with reduced motion", async ({ page }) => {
+    /* The blanket transition override in global.css is 0.01ms rather than 0
+       precisely so transitionend still fires for the expand handler. At 0 it
+       would never fire, the inline pixel height would never be cleared, and the
+       computed max-height would stay that pixel value instead of settling on
+       none — which is the assertion expectRowExpands makes. */
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+
+    await expectRowExpands(page);
+  });
+
+  test("a description that fits loses both its toggle and its fade", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const row = page.locator(".exp-row").first();
+    const description = row.locator(".exp-desc");
+    const toggle = row.getByRole("button", { name: "Read more" });
+
+    await expect(toggle).toBeVisible();
+    await expect(description).not.toHaveCSS("mask-image", "none");
+
+    /* Neither shipped description can fit the clamp — both run past five lines
+       at this width — so the only way to reach this path is to shorten one in
+       the page and let the component's own resize handler re-measure. */
+    const setText = (text: string) =>
+      description.evaluate((element, value) => {
+        element.textContent = value;
+        window.dispatchEvent(new Event("resize"));
+      }, text);
+
+    const original = (await description.textContent()) ?? "";
+    await setText("Short enough to fit.");
+
+    /* The toggle would otherwise be a control that changes nothing, and the
+       fade would ramp the bottom 14px of a box shorter than the clamp —
+       advertising hidden content over a real final line. */
+    await expect(toggle).toBeHidden();
+    await expect(description).toHaveCSS("mask-image", "none");
+
+    /* Restoring the text must bring both back, and this half is load-bearing:
+       it pins the clamp staying unconditional. Scope max-height to
+       :not([data-fits]) instead and scrollHeight equals clientHeight whatever
+       the text says, so the row measures as fitting forever and never
+       re-clamps. */
+    await setText(original);
+
+    await expect(toggle).toBeVisible();
+    await expect(description).not.toHaveCSS("mask-image", "none");
+  });
+
+  /* The read-more button, its aria-expanded/aria-controls pair, the clamp and
+     ThemeToggle's sr-only label are live only below the phone tiers, so the
+     desktop scan above has never seen any of them. Expanded as well as
+     collapsed: the open state is the one the script builds. */
+  for (const theme of ["light", "dark"] as const) {
+    test(`has no accessibility violations in ${theme} mode`, async ({
+      page,
+    }) => {
+      if (theme === "dark") await seedDark(page);
+      await page.goto("/");
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+      const collapsed = await new AxeBuilder({ page }).analyze();
+      expect(collapsed.violations).toEqual([]);
+
+      await page
+        .locator(".exp-row")
+        .first()
+        .getByRole("button", { name: "Read more" })
+        .click();
+
+      const expanded = await new AxeBuilder({ page }).analyze();
+      expect(expanded.violations).toEqual([]);
+    });
+  }
 });
 
 for (const theme of ["light", "dark"] as const) {
   test(`has no accessibility violations in ${theme} mode`, async ({ page }) => {
-    if (theme === "dark") {
-      /* Seeded before first paint rather than by clicking the toggle, so the
-         scan can't catch the page mid-fade. */
-      await page.addInitScript(
-        (key) => localStorage.setItem(key, "dark"),
-        THEME_STORAGE_KEY,
-      );
-    }
+    if (theme === "dark") await seedDark(page);
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
@@ -204,3 +318,39 @@ for (const theme of ["light", "dark"] as const) {
     expect(results.violations).toEqual([]);
   });
 }
+
+test("the 404 page is reachable, noindex, and clean", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  page.on("pageerror", (error) => errors.push(error.message));
+
+  /* The Worker serves dist/404.html for any unmatched path
+     (not_found_handling: "404-page"), and astro preview serves the same file,
+     so requesting a path that doesn't exist exercises what deploys. It is a
+     real page with the pre-paint script on it, and nothing else in this suite
+     ever loads it. */
+  const response = await page.goto("/no-such-page");
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+  /* Base gives a page one or the other, never both: a noindex page has no
+     canonical worth asserting, and the two would be conflicting signals. */
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    "content",
+    "noindex",
+  );
+  await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
+
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations).toEqual([]);
+
+  /* Requesting a path that doesn't exist makes the browser log the document's
+     own 404 status as a console error — that is the navigation, not the page.
+     Everything else still has to be clean: a subresource that fails to load,
+     or a script that throws, carries a different message and fails here. */
+  expect(
+    errors.filter((message) => !message.includes("status of 404")),
+  ).toEqual([]);
+});
