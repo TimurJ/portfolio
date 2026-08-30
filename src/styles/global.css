@@ -24,8 +24,16 @@
 
 :root {
   /* Keep UA-rendered surfaces (scrollbars, form controls, overscroll) on the
-     page's palette; the dark block flips it with the tokens. */
+     page's palette; the dark block flips it with the tokens. Declared twice on
+     purpose. `only` is what opts out of Chrome's Auto Dark Theme, which would
+     otherwise algorithmically invert this palette for anyone on a dark Android
+     — plain `light` does not opt out, and since the theme stopped following the
+     OS that now reaches every dark-OS visitor rather than only those who had
+     chosen light. The plain `light` declaration below is the floor: an engine
+     that can't parse `only` drops that second line whole and would fall back to
+     `normal`, losing the light surfaces this exists to set. */
   color-scheme: light;
+  color-scheme: light only;
   /* Both --bg values are mirrored by THEME_COLORS in lib/theme.ts, which feeds
      the theme-color meta (a <meta content> can't read a custom property).
      Change them together. */
@@ -170,7 +178,18 @@
 }
 
 @layer base {
+  /* The background is here as well as on body, and the pair is deliberate
+     despite looking redundant — deleting either one changes what paints it.
+     The root fills the canvas, which is what shows in the overscroll gutter, so
+     it has to be themed and to fade with the rest. body keeps its own so the
+     page background is painted by a box: with both declared, the propagation
+     that a transparent root would trigger (body's background used for the
+     canvas, body itself then not painted) never happens, and the fade no longer
+     depends on how an engine treats a propagated background mid-transition —
+     the asymmetry the iPhone flip pointed at, and one no desktop browser here
+     reproduces. */
   html {
+    background: var(--bg);
     scroll-behavior: smooth;
     scroll-padding-top: var(--headerH);
   }
@@ -219,5 +238,13 @@
       color var(--theme-fade) ease,
       border-color var(--theme-fade) ease,
       outline-color var(--theme-fade) ease;
+  }
+  /* The root fades too — it is the canvas, so it is what shows in the
+     overscroll gutter — but only its background. The root declares no color of
+     its own, so its computed one comes from the UA and flips with
+     color-scheme; joining the rule above would animate a text colour that
+     renders nothing, since body declares its own. */
+  html.theme-switching {
+    transition: background-color var(--theme-fade) ease;
   }
 }

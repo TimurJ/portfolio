@@ -18,11 +18,12 @@ export default defineConfig({
     baseURL,
     trace: "on-first-retry",
     /* Stated rather than inherited. Playwright already defaults to light
-       (`contextOptions.colorScheme ?? "light"`), but since the theme falls back
-       to the OS preference the suite's light baseline is now an assertion about
-       the emulated OS, not an incidental default — the theme test's opening
-       "no data-theme attribute" and the light axe pass both rest on it. The
-       dark-OS case overrides this per-block. */
+       (`contextOptions.colorScheme ?? "light"`), but the emulated OS is a
+       variable the theme cases reason about, so the suite pins it rather than
+       leaving it to a default that could move. The site ignores
+       prefers-color-scheme entirely, which is exactly what the dark-OS block
+       overriding this proves: under a dark machine the page still opens light,
+       and the toggle still reaches dark from there. */
     colorScheme: "light",
   },
   /* One engine. It catches script regressions, which is what these tests are

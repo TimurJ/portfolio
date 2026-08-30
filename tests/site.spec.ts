@@ -122,12 +122,27 @@ test("the theme toggle flips the theme and persists it", async ({ page }) => {
 test.describe("with no stored choice and a dark OS", () => {
   test.use({ colorScheme: "dark" });
 
-  /* The other half of the theme contract, and the one the rest of the suite
-     can't see: with nothing in localStorage the pre-paint script defers to the
-     OS. Every other test runs under the config's light colorScheme, so without
-     this case the fallback branch is never executed. */
-  test("the page opens dark", async ({ page }) => {
+  /* Light is the default outright: the site never reads prefers-color-scheme,
+     so a dark machine gets a light page. This is the only case that can catch
+     an OS fallback creeping back into the pre-paint script — every other test
+     runs under the config's light colorScheme, where a light page proves
+     nothing. */
+  test("the page still opens light", async ({ page }) => {
     await page.goto("/");
+    await expect(page.locator("html")).not.toHaveAttribute(THEME_ATTRIBUTE);
+    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute(
+      "content",
+      THEME_COLORS.light,
+    );
+  });
+
+  /* The escape hatch the whole arrangement rests on: ignoring the OS is only
+     defensible if a visitor who wants dark can still get there. This overlaps
+     the flip-and-persist case above on purpose — that one runs under a light
+     OS, and what this adds is that a dark machine doesn't gate the toggle. */
+  test("the toggle still reaches dark", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Dark theme" }).click();
     await expect(page.locator("html")).toHaveAttribute(THEME_ATTRIBUTE, "dark");
     await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute(
       "content",
@@ -136,28 +151,30 @@ test.describe("with no stored choice and a dark OS", () => {
   });
 });
 
-test("a later OS switch flips the theme, until a choice is stored", async ({
-  page,
-}) => {
+test("a later OS switch leaves the theme alone", async ({ page }) => {
   await page.goto("/");
   const html = page.locator("html");
   const themeColor = page.locator('meta[name="theme-color"]');
   await expect(html).not.toHaveAttribute(THEME_ATTRIBUTE);
 
-  /* The page has already painted, so this is the listener's job, not the
-     pre-paint script's — nothing here reloads. */
+  /* The page has already painted, so a change here could only come from a
+     listener — and there is none. Asserting that absence needs a positive to
+     wait on first: a `not.toHaveAttribute` passes on its first poll, which can
+     land before the renderer has even dispatched the media change, so on its
+     own it would go green against a page that was about to flip. This marker
+     listener is registered before the switch and proves the event reached page
+     scripts, so by the time the negative runs a reintroduced subscription would
+     already have acted. Together with the dark-OS case above — which covers the
+     pre-paint half — that closes both sides. */
+  await page.evaluate(() => {
+    matchMedia("(prefers-color-scheme: dark)").addEventListener(
+      "change",
+      () => document.documentElement.setAttribute("data-mq-fired", ""),
+      { once: true },
+    );
+  });
   await page.emulateMedia({ colorScheme: "dark" });
-  await expect(html).toHaveAttribute(THEME_ATTRIBUTE, "dark");
-  await expect(themeColor).toHaveAttribute("content", THEME_COLORS.dark);
-
-  /* And the other half of the rule: using the toggle is making a choice, after
-     which the OS stops being consulted. The button's name is the theme it
-     switches *to*, so on a dark page it reads "Light theme". */
-  await page.getByRole("button", { name: "Light theme" }).click();
-  await expect(html).not.toHaveAttribute(THEME_ATTRIBUTE);
-
-  await page.emulateMedia({ colorScheme: "light" });
-  await page.emulateMedia({ colorScheme: "dark" });
+  await expect(html).toHaveAttribute("data-mq-fired");
   await expect(html).not.toHaveAttribute(THEME_ATTRIBUTE);
   await expect(themeColor).toHaveAttribute("content", THEME_COLORS.light);
 });
