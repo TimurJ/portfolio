@@ -8,9 +8,13 @@ on:
 permissions:
   contents: read
 
+# Superseding a running PR check is the point of this block; superseding a
+# running deploy is not, and the last step of this job deploys. Scoping the
+# cancel to pull_request means two quick pushes to main queue instead of the
+# second killing the first mid-upload.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   ci:
@@ -65,3 +69,17 @@ jobs:
           name: playwright-traces
           path: test-results/
           if-no-files-found: ignore
+
+      # Only a green main deploys, and from this job so it ships the dist/ the
+      # gates above just ran against. `pnpm exec wrangler deploy`, not
+      # `pnpm run deploy`: that script rebuilds first.
+      #
+      # Without a TTY wrangler overrides conflicting Custom Domain and DNS
+      # records instead of prompting, so this step can rewrite production DNS
+      # silently. docs/deploying.md covers why, and why it is a step.
+      - name: Deploy to Cloudflare Workers
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: pnpm exec wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
