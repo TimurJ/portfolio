@@ -1,4 +1,6 @@
 ---
+import { hrefOf } from "../lib/nav";
+
 interface Props {
   /** Tight chrome context (the header): steps the type down on small phones. */
   compact?: boolean;
@@ -10,7 +12,7 @@ const { compact, class: className } = Astro.props;
 ---
 
 <a
-  href="#contact"
+  href={hrefOf("contact")}
   class:list={["border-b border-line pb-0.5 text-meta", { compact }, className]}
 >
   {

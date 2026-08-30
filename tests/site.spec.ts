@@ -37,11 +37,22 @@ test("the skip link is the first tab stop and lands in main", async ({
   const skipLink = page.locator('a[href="#main"]');
   await expect(skipLink).toBeFocused();
   /* sr-only until focused, then fixed at the top-left — a skip link nobody can
-     see is the usual way this breaks. */
-  await expect(skipLink).toBeVisible();
+     see is the usual way this breaks, and toBeVisible() cannot catch it: an
+     sr-only element is a 1x1 box with clip-path, and Playwright's visibility is
+     checkVisibility() plus a non-empty rect, neither of which reads clip-path.
+     One assertion per way the reveal breaks — dropping the :focus block leaves
+     position static, dropping focus:not-sr-only leaves the clip in place. */
+  await expect(skipLink).toHaveCSS("position", "fixed");
+  await expect(skipLink).toHaveCSS("clip-path", "none");
 
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/#main$/);
+  /* The hash changes whether or not #main resolves, so the URL alone stays
+     green with id="main" deleted. Tabbing on is what proves the target exists
+     — and that <main> needs no tabindex="-1" for focus to continue inside it,
+     which is why the fragment gets no focus of its own to assert. */
+  await page.keyboard.press("Tab");
+  await expect(page.locator("main :focus")).toHaveCount(1);
 });
 
 test("the theme toggle flips the theme and persists it", async ({ page }) => {

@@ -134,6 +134,12 @@ import ThemeToggle from "./ThemeToggle.astro";
       section: document.getElementById(link.hash.slice(1)),
     }));
     const defaultHash = navTargets[0]?.link.hash;
+    /* The hashes the highlight may lock onto: nav links whose section exists.
+       The skip link's #main resolves to a real element but to no nav link, so
+       locking onto it would blank every link until the lock expired. */
+    const lockableHashes = new Set(
+      navTargets.filter(({ section }) => section).map(({ link }) => link.hash),
+    );
 
     let headerHeight = 0;
     let lockedHash: string | null = null;
@@ -203,17 +209,7 @@ import ThemeToggle from "./ThemeToggle.astro";
         event.target instanceof Element
           ? event.target.closest<HTMLAnchorElement>('a[href^="#"]')
           : null;
-      /* Only a hash the nav owns may drive the highlight — the skip link's
-         #main resolves to a real element, but to no nav link, so locking onto
-         it would blank every link until the lock expired. */
-      if (
-        !link ||
-        !navTargets.some(
-          ({ link: navLink, section }) =>
-            section !== null && navLink.hash === link.hash,
-        )
-      )
-        return;
+      if (!link || !lockableHashes.has(link.hash)) return;
       lockedHash = link.hash;
       clearTimeout(lockTimeout);
       lockTimeout = setTimeout(() => {

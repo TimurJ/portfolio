@@ -17,7 +17,7 @@ export default defineConfig({
       provider: fontProviders.fontsource(),
       name: "Archivo",
       cssVariable: "--font-archivo",
-      weights: [400, 500, 600, 800],
+      weights: [400],
       styles: ["normal"],
       fallbacks: ["system-ui", "sans-serif"],
     },

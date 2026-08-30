@@ -1,7 +1,7 @@
 ---
 import type { ComponentProps } from "astro/types";
 
-import { type SectionHref, type SectionId, titleIdOf } from "../lib/nav";
+import { type SectionId, nextOf, titleIdOf } from "../lib/nav";
 import ScrollCue from "./ScrollCue.astro";
 import SectionIntro from "./SectionIntro.astro";
 
@@ -14,14 +14,11 @@ type Props = Pick<
   "eyebrow" | "title" | "blurb" | "condensed"
 > & {
   id: SectionId;
-  nextHref: SectionHref;
 };
 
-const { id, nextHref, ...intro } = Astro.props;
-/* Bound once: the section's aria-labelledby and the heading id SectionIntro
-   renders must agree, and two independent calls would type-check even after
-   one drifted. */
+const { id, ...intro } = Astro.props;
 const titleId = titleIdOf(id);
+const nextHref = nextOf(id);
 ---
 
 <section
@@ -32,10 +29,18 @@ const titleId = titleIdOf(id);
   <SectionIntro titleId={titleId} {...intro} />
   <div class="section-list"><slot /></div>
   {
-    /* `"" : undefined`, not the raw boolean: Astro renders `false` as
+    /* No cue on the last section in the order — there is nothing to cue on to.
+      `"" : undefined`, not the raw boolean: Astro renders `false` as
       data-condensed="false", which would still match [data-condensed]. */
   }
-  <div class="section-cue" data-condensed={intro.condensed ? "" : undefined}>
-    <ScrollCue href={nextHref} />
-  </div>
+  {
+    nextHref && (
+      <div
+        class="section-cue"
+        data-condensed={intro.condensed ? "" : undefined}
+      >
+        <ScrollCue href={nextHref} />
+      </div>
+    )
+  }
 </section>

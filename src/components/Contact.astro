@@ -4,9 +4,6 @@ import { email } from "../lib/site";
 import SectionIntro from "./SectionIntro.astro";
 
 const sectionId: SectionId = "contact";
-/* Bound once: the section's aria-labelledby and the heading id SectionIntro
-   renders must agree, and two independent calls would type-check even after
-   one drifted. */
 const titleId = titleIdOf(sectionId);
 const mailto = `mailto:${email}`;
 ---

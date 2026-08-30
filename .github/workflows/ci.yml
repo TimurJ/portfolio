@@ -53,3 +53,15 @@ jobs:
 
       - name: End-to-end tests
         run: pnpm test:e2e
+
+      # playwright.config.ts sets trace: "on-first-retry" for CI, which is only
+      # worth anything if the zip outlives the runner. !cancelled() rather than
+      # failure() so a flaky pass — the case that setting exists for — keeps
+      # its trace too.
+      - name: Upload Playwright traces
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-traces
+          path: test-results/
+          if-no-files-found: ignore

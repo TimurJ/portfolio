@@ -4,7 +4,7 @@
 
 Personal portfolio site — a minimalist, static single page, live at [timurjalilov.com](https://timurjalilov.com).
 
-![The portfolio's home screen](docs/screenshot.png)
+![The portfolio's home screen](docs/screenshot.webp)
 
 ## Stack
 

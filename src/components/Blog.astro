@@ -1,12 +1,7 @@
 ---
 import { iconAttrs } from "../lib/icons";
-import { type SectionHref, type SectionId } from "../lib/nav";
 import DotLabel from "./DotLabel.astro";
 import Section from "./Section.astro";
-
-interface Props {
-  nextHref: SectionHref;
-}
 
 type BlogEntry = {
   date: string;
@@ -38,14 +33,10 @@ const posts: BlogEntry[] = [
       "A pattern for streaming market data that keeps the client honest after a dropped connection, and the tests that prove it.",
   },
 ];
-
-const sectionId: SectionId = "blog";
-const { nextHref } = Astro.props;
 ---
 
 <Section
-  id={sectionId}
-  nextHref={nextHref}
+  id="blog"
   eyebrow="Blog"
   title="Explore My Blog"
   blurb="These are the findings I've collected building front ends in finance: trading screens, market data, design systems. I write them up as I go so the insights are useful to someone other than me."

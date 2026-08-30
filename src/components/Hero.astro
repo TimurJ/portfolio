@@ -1,14 +1,10 @@
 ---
 import { Image } from "astro:assets";
 
-import portrait from "../assets/portrait-bw.png";
-import { type SectionHref, type SectionId, titleIdOf } from "../lib/nav";
+import portrait from "../assets/portrait-bw.webp";
+import { type SectionId, nextOf, titleIdOf } from "../lib/nav";
 import { role } from "../lib/site";
 import ScrollCue from "./ScrollCue.astro";
-
-interface Props {
-  nextHref: SectionHref;
-}
 
 type Stat = {
   value: string;
@@ -16,11 +12,9 @@ type Stat = {
 };
 
 const sectionId: SectionId = "hero";
-/* Bound once: the section's aria-labelledby and the <h1>'s id must agree, and
-   two independent calls would type-check even after one drifted. */
 const titleId = titleIdOf(sectionId);
+const nextHref = nextOf(sectionId);
 const year = new Date().getFullYear();
-const { nextHref } = Astro.props;
 
 const stats: Stat[] = [
   { value: "+05", label: "Years in finance" },
@@ -73,9 +67,13 @@ const railLabelClass =
           </p>
         </div>
       </div>
-      <div class="hero-scroll">
-        <ScrollCue href={nextHref} />
-      </div>
+      {
+        nextHref && (
+          <div class="hero-scroll">
+            <ScrollCue href={nextHref} />
+          </div>
+        )
+      }
     </div>
   </div>
   <div class="hero-media relative">
