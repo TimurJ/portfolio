@@ -20,7 +20,7 @@ Tokens are exposed as Tailwind utilities via `@theme inline` (`bg-bg`, `text-ink
 
 ## Theming
 
-- Light is the default; dark applies via `data-theme="dark"` on the root element.
+- Light is the design's default; dark applies via `data-theme="dark"` on the root element. The implementation deliberately defaults to the OS preference instead, treating a stored `"light"` as the only opt-out — see the decision record in [architecture.md](architecture.md).
 - Tailwind's `dark:` variant is bound to that attribute (not `prefers-color-scheme`).
 - The design persists the user's choice in localStorage under `tj-portfolio-theme` and animates the flip with a ~260ms color transition. The implementation deliberately slows this to 500ms (`--theme-fade`) — see the decision record in [architecture.md](architecture.md).
 
@@ -28,7 +28,3 @@ Tokens are exposed as Tailwind utilities via `@theme inline` (`bg-bg`, `text-ink
 
 - Archivo (400), self-hosted via Astro's Fonts API (`--font-archivo`, preloaded); stack falls back to `system-ui, sans-serif`.
 - Display headings use **weight 400** with tight tracking (−0.02em to −0.04em) and line-height ≈ 0.88–1.15; the design's sizes are fluid `clamp()` values per section.
-
-## Status
-
-The page build is complete: all markup, behavior JS (theme toggle, active-nav sync, smooth scroll, read-more), and the portrait asset shipped. Two design-file behaviors were deliberately not ported — the pill-balancing script and the 640px article rule are provably inert — and the design's container-query rules were superseded by the width-media-query styling policy; both calls are recorded in [architecture.md](architecture.md)'s Decisions.

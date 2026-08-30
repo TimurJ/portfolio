@@ -76,6 +76,49 @@ test("the theme toggle flips the theme and persists it", async ({ page }) => {
   await expect(html).toHaveAttribute(THEME_ATTRIBUTE, "dark");
 });
 
+test.describe("with no stored choice and a dark OS", () => {
+  test.use({ colorScheme: "dark" });
+
+  /* The other half of the theme contract, and the one the rest of the suite
+     can't see: with nothing in localStorage the pre-paint script defers to the
+     OS. Every other test runs under the config's light colorScheme, so without
+     this case the fallback branch is never executed. */
+  test("the page opens dark", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("html")).toHaveAttribute(THEME_ATTRIBUTE, "dark");
+    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute(
+      "content",
+      THEME_COLORS.dark,
+    );
+  });
+});
+
+test("a later OS switch flips the theme, until a choice is stored", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const html = page.locator("html");
+  const themeColor = page.locator('meta[name="theme-color"]');
+  await expect(html).not.toHaveAttribute(THEME_ATTRIBUTE);
+
+  /* The page has already painted, so this is the listener's job, not the
+     pre-paint script's — nothing here reloads. */
+  await page.emulateMedia({ colorScheme: "dark" });
+  await expect(html).toHaveAttribute(THEME_ATTRIBUTE, "dark");
+  await expect(themeColor).toHaveAttribute("content", THEME_COLORS.dark);
+
+  /* And the other half of the rule: using the toggle is making a choice, after
+     which the OS stops being consulted. The button's name is the theme it
+     switches *to*, so on a dark page it reads "Light theme". */
+  await page.getByRole("button", { name: "Light theme" }).click();
+  await expect(html).not.toHaveAttribute(THEME_ATTRIBUTE);
+
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.emulateMedia({ colorScheme: "dark" });
+  await expect(html).not.toHaveAttribute(THEME_ATTRIBUTE);
+  await expect(themeColor).toHaveAttribute("content", THEME_COLORS.light);
+});
+
 test("every section is exposed as a named region", async ({ page }) => {
   await page.goto("/");
 

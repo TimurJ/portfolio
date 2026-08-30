@@ -1,10 +1,22 @@
-/** Contact address, rendered by Contact (CTA links) and Footer (mailto + display). */
+/** Contact address, displayed by Footer. */
 export const email = "timurjalilov1@gmail.com";
+
+/** The destination of every "Get in Touch" CTA — the header and section intros
+    (ContactCta), the Contact section's button, and the footer's address. Built
+    once here because three components need the same href, and a `mailto:`
+    assembled in each of them is a string that can drift. */
+export const mailto = `mailto:${email}`;
 
 /** Site identity — page titles (index, 404), Hero's rail label, and Base's
     meta/JSON-LD. */
 export const name = "Timur Jalilov";
 export const role = "Senior Frontend Engineer";
+
+/** The home page's meta description, and so its og/twitter description. Lives
+    here with the other identity strings rather than inline in the page.
+    Length is deliberate: 156 characters, inside the ~155-160 Google renders
+    before truncating, so the sentence is never cut mid-phrase. */
+export const description = `${role} in London building the frontends of real-time trading platforms — currently leading the team behind an energy-commodities terminal.`;
 
 /** Public profiles — Footer's "Elsewhere" links and Base's JSON-LD sameAs. */
 export const socials = [

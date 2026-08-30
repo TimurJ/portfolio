@@ -1,0 +1,42 @@
+---
+import { mailto } from "../lib/site";
+
+interface Props {
+  /** Tight chrome context (the header): drops the CTA on small phones. */
+  compact?: boolean;
+  /** Extra width-invariant utilities for the consumer's context (placement). */
+  class?: string;
+}
+
+const { compact = false, class: className } = Astro.props;
+---
+
+{
+  /* Straight to the mail client rather than a jump to #contact: this is the
+    site's one conversion, and every step between reading and writing loses
+    people. ↗ per the documented vocabulary — a mailto leaves the page. */
+}
+<a
+  href={mailto}
+  class:list={["border-b border-line pb-0.5 text-meta", { compact }, className]}
+>
+  Get in Touch ↗
+</a>
+
+<style>
+  /* Tier rule per docs/architecture.md; 460 is the phone-sm tier. Below it the
+     header's row can no longer hold the nav and this CTA side by side: the nav
+     sits in a minmax(0,1fr) column and would overflow under the actions,
+     putting the toggle on top of the Contact link. Dropping the CTA is what
+     keeps the header one line — the Experience and Blog intros carry this CTA
+     twice more, and the Contact section repeats it as a filled button.
+
+     The rule lives here rather than in Header because Astro scopes styles per
+     component: this anchor carries this file's scope id, so a rule written in
+     Header could not select it. */
+  @media (width < 460px) {
+    .compact {
+      display: none;
+    }
+  }
+</style>

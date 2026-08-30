@@ -1,8 +1,7 @@
 ---
 import { hrefOf, sections } from "../lib/nav";
-import { email, socials } from "../lib/site";
+import { email, mailto, socials } from "../lib/site";
 
-const mailto = `mailto:${email}`;
 const year = new Date().getFullYear();
 
 // The footer doesn't link to the section it closes the page with.
@@ -24,8 +23,14 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
       {email}
     </a>
     <div class="footer-cols grid border-t border-bg/24">
-      <div class="flex flex-col gap-3.5">
-        <span class={footerLabelClass}>Navigate</span>
+      {
+        /* Each column's heading names its own group, so the links aren't six
+          loose anchors in `contentinfo`: the first is a second navigation
+          landmark (distinguished from Header's by its label), the second a
+          plain group, since a list of profile links isn't site navigation. */
+      }
+      <nav aria-labelledby="footer-nav-label" class="flex flex-col gap-3.5">
+        <span id="footer-nav-label" class={footerLabelClass}>Navigate</span>
         {
           footerNav.map(({ id, label }) => (
             <a href={hrefOf(id)} class={footerLinkClass}>
@@ -33,9 +38,15 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
             </a>
           ))
         }
-      </div>
-      <div class="flex flex-col gap-3.5">
-        <span class={footerLabelClass}>Elsewhere</span>
+      </nav>
+      <div
+        role="group"
+        aria-labelledby="footer-elsewhere-label"
+        class="flex flex-col gap-3.5"
+      >
+        <span id="footer-elsewhere-label" class={footerLabelClass}>
+          Elsewhere
+        </span>
         {
           socials.map(({ href, label }) => (
             <a href={href} class={footerLinkClass}>
@@ -43,8 +54,12 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
             </a>
           ))
         }
-        {/* No CV hosted yet — becomes a link like the two above once it is. */}
-        <span>Résumé ↗</span>
+        {
+          /* No CV hosted yet — becomes a link like the two above once it is.
+            No ↗ until then: the arrow means "leaves the page", and this one
+            goes nowhere (same reasoning as Blog's non-link "Read article"). */
+        }
+        <span>Résumé</span>
       </div>
       <div class="flex flex-col gap-3.5">
         <span class={footerLabelClass}>Based in</span>
@@ -71,8 +86,10 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
 
 <style>
   /* Per-tier rules live here per the styling policy (docs/architecture.md);
-     1100/700 are --breakpoint-laptop/--breakpoint-phone written out; 410 is
-     this footer's own narrowest tier. */
+     1100/700 = laptop/phone, and 410 is this footer's own narrowest tier.
+     Naming the tier rather than spelling the token: Tailwind's scanner reads
+     this file, and a --breakpoint-* written even in a comment makes it emit
+     that token into :root, referenced by nothing. */
 
   .footer-inner {
     padding: clamp(32px, 5vh, 56px) var(--gutter) clamp(20px, 3vh, 30px);

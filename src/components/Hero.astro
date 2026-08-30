@@ -94,7 +94,9 @@ const railLabelClass =
 
 <style>
   /* Per-tier rules live here per the styling policy (docs/architecture.md);
-     900/700 are --breakpoint-tablet/--breakpoint-phone written out. */
+     900/700 = tablet/phone. Naming the tier rather than spelling the token:
+     Tailwind's scanner reads this file, and a --breakpoint-* written even in a
+     comment makes it emit that token into :root, referenced by nothing. */
 
   .hero {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);

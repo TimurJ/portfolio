@@ -6,13 +6,10 @@ import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import Hero from "../components/Hero.astro";
 import Base from "../layouts/Base.astro";
-import { name, role } from "../lib/site";
+import { description, name, role } from "../lib/site";
 ---
 
-<Base
-  title={`${name}, ${role}`}
-  description={`${role} in London building the frontends of real-time trading platforms — currently leading the team behind an energy-commodities trading terminal at Onyx Capital Group.`}
->
+<Base title={`${name}, ${role}`} description={description}>
   <Header />
   {/* id: Header's skip link targets it. */}
   <main id="main">

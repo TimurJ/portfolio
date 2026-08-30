@@ -19,8 +19,8 @@ const { large = false, class: className } = Astro.props;
 >
   <span
     class:list={[
-      large ? "size-2" : "size-1.5 flex-none",
-      "rounded-full bg-dot",
+      large ? "size-2" : "size-1.5",
+      "flex-none rounded-full bg-dot",
     ]}></span>
   <slot />
 </span>

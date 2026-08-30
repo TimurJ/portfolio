@@ -61,7 +61,21 @@ const personLd = JSON.stringify(person).replaceAll("<", "\\u003c");
     }
     <meta name="theme-color" content={THEME_COLORS.light} />
     <meta name="generator" content={Astro.generator} />
-    <script type="application/ld+json" set:html={personLd} />
+    {
+      /* Structured data only where it can be indexed — same reasoning as the
+         canonical above: describing an entity on a page that asks not to be
+         indexed is a conflicting signal. */
+    }
+    {
+      /* is:inline because this is data, not code: it must ship verbatim rather
+         than be bundled or processed. Astro infers that from the `type`
+         attribute anyway; saying it explicitly silences the hint. */
+    }
+    {
+      !noindex && (
+        <script is:inline type="application/ld+json" set:html={personLd} />
+      )
+    }
     <Font cssVariable="--font-archivo" preload={[{ weight: 400 }]} />
     <script
       is:inline

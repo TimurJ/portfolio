@@ -1,6 +1,6 @@
 ---
 import { hrefOf, sections } from "../lib/nav";
-import BookCallCta from "./BookCallCta.astro";
+import ContactCta from "./ContactCta.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 ---
 
@@ -25,7 +25,7 @@ import ThemeToggle from "./ThemeToggle.astro";
   </nav>
   <div class="header-actions flex items-center">
     <ThemeToggle />
-    <BookCallCta compact />
+    <ContactCta compact />
   </div>
 </header>
 
@@ -133,7 +133,10 @@ import ThemeToggle from "./ThemeToggle.astro";
       link,
       section: document.getElementById(link.hash.slice(1)),
     }));
-    const defaultHash = navTargets[0]?.link.hash;
+    /* The first nav link whose section is actually on the page — not simply
+       the first link, which would park the highlight on a link to nothing
+       until a real section top crossed the probe. */
+    const defaultHash = navTargets.find(({ section }) => section)?.link.hash;
     /* The hashes the highlight may lock onto: nav links whose section exists.
        The skip link's #main resolves to a real element but to no nav link, so
        locking onto it would blank every link until the lock expired. */
@@ -205,6 +208,20 @@ import ThemeToggle from "./ThemeToggle.astro";
        outlast the scroll rather than a measured value. */
     const SMOOTH_SCROLL_LOCK_MS = 900;
     document.addEventListener("click", (event) => {
+      /* Only a plain left click scrolls this page. A modified or non-primary
+         click opens a new tab and leaves the current scroll where it was, so
+         locking the highlight would strand it on the wrong link for the full
+         lock duration. */
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
       const link =
         event.target instanceof Element
           ? event.target.closest<HTMLAnchorElement>('a[href^="#"]')

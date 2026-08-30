@@ -58,24 +58,41 @@ import { iconAttrs } from "../lib/icons";
     parseFloat(getComputedStyle(root).getPropertyValue("--theme-fade")) || 500;
   let switchTimeout: ReturnType<typeof setTimeout> | undefined;
 
+  /* The three things a flip touches, in one place: the attribute the CSS keys
+     off, the browser-chrome colour, and the class that arms the fade. Shared by
+     the button and the OS-preference listener so the two can't drift. */
+  const applyTheme = (next: "light" | "dark") => {
+    root.classList.add("theme-switching");
+    clearTimeout(switchTimeout);
+    switchTimeout = setTimeout(
+      () => root.classList.remove("theme-switching"),
+      fadeMs + 60,
+    );
+    if (next === "dark") {
+      root.setAttribute(THEME_ATTRIBUTE, "dark");
+    } else {
+      root.removeAttribute(THEME_ATTRIBUTE);
+    }
+    themeColorMeta?.setAttribute("content", THEME_COLORS[next]);
+  };
+
+  /* Mirrors the pre-paint script's read in Base: a blocked localStorage reads
+     as "no choice made", which is the answer that lets the OS decide. */
+  const storedTheme = () => {
+    try {
+      return localStorage.getItem(THEME_STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  };
+
   document
     .querySelectorAll<HTMLButtonElement>("[data-theme-toggle]")
     .forEach((button) => {
       button.addEventListener("click", () => {
         const next =
           root.getAttribute(THEME_ATTRIBUTE) === "dark" ? "light" : "dark";
-        root.classList.add("theme-switching");
-        clearTimeout(switchTimeout);
-        switchTimeout = setTimeout(
-          () => root.classList.remove("theme-switching"),
-          fadeMs + 60,
-        );
-        if (next === "dark") {
-          root.setAttribute(THEME_ATTRIBUTE, "dark");
-        } else {
-          root.removeAttribute(THEME_ATTRIBUTE);
-        }
-        themeColorMeta?.setAttribute("content", THEME_COLORS[next]);
+        applyTheme(next);
         try {
           localStorage.setItem(THEME_STORAGE_KEY, next);
         } catch {
@@ -83,4 +100,18 @@ import { iconAttrs } from "../lib/icons";
         }
       });
     });
+
+  /* Base resolves the OS preference once, before first paint. Without this the
+     resolution would stand until a reload, so a visitor who has never chosen
+     stays light through their machine's sunset switch to dark. A stored choice
+     outranks the OS, exactly as it does on load — and once someone has used the
+     toggle they have made that choice, so this stops applying to them. */
+  matchMedia("(prefers-color-scheme: dark)").addEventListener(
+    "change",
+    (event) => {
+      const stored = storedTheme();
+      if (stored === "dark" || stored === "light") return;
+      applyTheme(event.matches ? "dark" : "light");
+    },
+  );
 </script>

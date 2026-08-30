@@ -1,4 +1,4 @@
-# portfolio
+# Timur Jalilov — Portfolio
 
 [![CI](https://github.com/TimurJ/portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/TimurJ/portfolio/actions/workflows/ci.yml)
 

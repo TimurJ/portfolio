@@ -1,5 +1,6 @@
 ---
-import BookCallCta from "./BookCallCta.astro";
+import type { SectionTitleId } from "../lib/nav";
+import ContactCta from "./ContactCta.astro";
 import DotLabel from "./DotLabel.astro";
 
 interface Props {
@@ -7,8 +8,13 @@ interface Props {
   title: string;
   blurb: string;
   /** id for the <h2>, so the consuming section can name itself by it. Required
-      rather than optional: an unnamed section is not a landmark. */
-  titleId: string;
+      rather than optional: an unnamed section is not a landmark. Typed to
+      `titleIdOf`'s output rather than `string`, which rules out an arbitrary id
+      but not a *wrong* section's — what rules that out is that neither consumer
+      hand-writes one: `Section` derives it from the section id it was given,
+      and `Contact` binds a single const off `titleIdOf` for both this prop and
+      its own aria-labelledby. */
+  titleId: SectionTitleId;
   /** Tightens the intro below 460px, for sections that must fit one phone screen. */
   condensed?: boolean;
   /** The page-closing CTA variant (Contact): roomier padding, larger centered
@@ -51,7 +57,7 @@ const {
     ]}
   >
     <p class="intro-blurb max-w-[42ch] text-pretty text-muted">{blurb}</p>
-    <slot name="cta"><BookCallCta class="self-start" /></slot>
+    <slot name="cta"><ContactCta class="self-start" /></slot>
   </div>
 </div>
 

@@ -5,20 +5,18 @@ import { name } from "../lib/site";
 
 <Base
   title={`Page not found — ${name}`}
-  description="This page doesn't exist."
+  description="This page doesn’t exist."
   noindex
 >
   <main
     class="mx-auto flex min-h-svh max-w-page flex-col items-start justify-center gap-5 px-(--gutter)"
   >
     <p class="text-meta tracking-[0.14em] text-muted">404</p>
-    <h1
-      class="text-[clamp(44px,8vw,96px)] leading-none font-normal tracking-[-0.04em]"
-    >
+    <h1 class="notfound-title leading-none font-normal tracking-[-0.04em]">
       Page not found
     </h1>
     <p class="text-body leading-[1.55] text-muted">
-      There's nothing at this address.
+      There’s nothing at this address.
     </p>
     <a
       href="/"
@@ -28,3 +26,13 @@ import { name } from "../lib/site";
     </a>
   </main>
 </Base>
+
+<style>
+  /* The fluid size lives here rather than as a text-[clamp(…)] utility in
+     markup: it varies with the viewport, and the styling policy
+     (docs/architecture.md) keeps only width-invariant utilities in markup.
+     Mirrors .hero-title, the page's other fluid display heading. */
+  .notfound-title {
+    font-size: clamp(44px, 8vw, 96px);
+  }
+</style>

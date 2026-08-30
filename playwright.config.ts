@@ -17,6 +17,13 @@ export default defineConfig({
   use: {
     baseURL,
     trace: "on-first-retry",
+    /* Stated rather than inherited. Playwright already defaults to light
+       (`contextOptions.colorScheme ?? "light"`), but since the theme falls back
+       to the OS preference the suite's light baseline is now an assertion about
+       the emulated OS, not an incidental default — the theme test's opening
+       "no data-theme attribute" and the light axe pass both rest on it. The
+       dark-OS case overrides this per-block. */
+    colorScheme: "light",
   },
   /* One engine. It catches script regressions, which is what these tests are
      for; browser-specific CSS is verified by hand against the design.
