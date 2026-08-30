@@ -29,7 +29,7 @@ Design fidelity, structure, and the decision record live in the docs:
 | `pnpm format`     | Format the codebase with Prettier             |
 | `pnpm test:e2e`   | Smoke + axe scan over `./dist` (build first)  |
 | `pnpm verify`     | All CI gates: format, lint, types, build, e2e |
-| `pnpm run deploy` | Build and deploy to Cloudflare Workers        |
+| `pnpm run deploy` | Manual build and deploy (CI deploys `main`)   |
 
 Requires Node ≥ 24.16 and pnpm (pinned via the `packageManager` field). `pnpm test:e2e` — and so
 `pnpm verify` — additionally needs a browser, which `pnpm install` does not fetch: run
@@ -37,7 +37,9 @@ Requires Node ≥ 24.16 and pnpm (pinned via the `packageManager` field). `pnpm 
 
 ## Deploying
 
-Deploys to Cloudflare Workers as static assets via Workers Builds — see [docs/deploying.md](docs/deploying.md).
+Every push to `main` that passes CI deploys to Cloudflare Workers as static assets, from the last
+step of the CI job. `pnpm run deploy` is the manual escape hatch — see
+[docs/deploying.md](docs/deploying.md) for the domain, DNS, and HSTS setup.
 
 ## License
 

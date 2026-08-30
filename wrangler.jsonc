@@ -5,4 +5,15 @@
     "directory": "./dist",
     "not_found_handling": "404-page",
   },
+  /* The custom domain attaches the zone on deploy, so the binding lives in the
+     repo rather than only in the dashboard. Editing `routes` is therefore a
+     production DNS change — see docs/deploying.md.
+
+     Both subdomain switches are set explicitly because wrangler derives them
+     independently, and an absent key inherits whatever the dashboard holds
+     rather than defaulting off. Each publishes a copy of this site whose
+     canonical, og:url and sitemap point at the apex instead. */
+  "routes": [{ "pattern": "timurjalilov.com", "custom_domain": true }],
+  "workers_dev": false,
+  "preview_urls": false,
 }
