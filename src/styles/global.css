@@ -76,6 +76,78 @@
   --on-ink-mid: 0.88;
 }
 
+/* The theme-flip fade animates these tokens rather than the properties that
+   consume them (see the rule at the end of this file, and the decision record
+   in docs/architecture.md). A custom property can only be interpolated once it
+   is registered, so every token the dark block above restates is registered
+   here — and only those: --accent-hover is identical in both themes,
+   --theme-fade is read as a string by ThemeToggle, and --headerH/--footerH are
+   measurements rather than theme state.
+
+   `initial-value` is required by @property, and these mirror the light values
+   above as the useful choice of anchor rather than as a contract: :root always
+   declares all eleven, so an initial value can only surface if that block goes
+   away, and then the site stays light rather than unstyled.
+
+   Below Safari/iOS 16.4 and Chrome 85, @property is not understood, so the
+   tokens stay unregistered, cannot interpolate, and the flip is simply not
+   animated. The palette itself is untouched by that. */
+@property --bg {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ffffff;
+}
+@property --ink {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #1c1c1c;
+}
+@property --muted {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #6a6a6a;
+}
+@property --line {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(28, 28, 28, 0.35);
+}
+@property --hair {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgba(28, 28, 28, 0.12);
+}
+@property --accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #d80000;
+}
+@property --accent-text {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #b40000;
+}
+@property --accent-on-ink {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #ff5a4d;
+}
+@property --dot {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #d80000;
+}
+@property --on-ink-dim {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.5;
+}
+@property --on-ink-mid {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.75;
+}
+
 /* Expose the tokens as Tailwind utilities (bg-bg, text-ink, border-line,
    text-accent-text, …). `inline` keeps them referencing the live variables,
    so utilities re-resolve when the theme flips. */
@@ -181,13 +253,11 @@
   /* The background is here as well as on body, and the pair is deliberate
      despite looking redundant — deleting either one changes what paints it.
      The root fills the canvas, which is what shows in the overscroll gutter, so
-     it has to be themed and to fade with the rest. body keeps its own so the
-     page background is painted by a box: with both declared, the propagation
-     that a transparent root would trigger (body's background used for the
-     canvas, body itself then not painted) never happens, and the fade no longer
-     depends on how an engine treats a propagated background mid-transition —
-     the asymmetry the iPhone flip pointed at, and one no desktop browser here
-     reproduces. */
+     it has to be themed. body keeps its own so the page background is painted
+     by a box: with both declared, the propagation that a transparent root would
+     trigger (body's background used for the canvas, body itself then not
+     painted) never happens. Neither of them transitions any more — both read
+     --bg, and it is --bg that fades. */
   html {
     background: var(--bg);
     scroll-behavior: smooth;
@@ -230,21 +300,30 @@
   }
   /* Theme-flip fade. .theme-switching exists only for the duration of a
      toggle click (see ThemeToggle.astro), so hovers, focus rings, and the
-     initial paint stay instant. */
-  html.theme-switching body,
-  html.theme-switching body * {
-    transition:
-      background-color var(--theme-fade) ease,
-      color var(--theme-fade) ease,
-      border-color var(--theme-fade) ease,
-      outline-color var(--theme-fade) ease;
-  }
-  /* The root fades too — it is the canvas, so it is what shows in the
-     overscroll gutter — but only its background. The root declares no color of
-     its own, so its computed one comes from the UA and flips with
-     color-scheme; joining the rule above would animate a text colour that
-     renders nothing, since body declares its own. */
+     initial paint stay instant.
+
+     What fades is the tokens, on the one element that declares them — not the
+     properties that read them. Every colour on the page resolves from those
+     eleven variables, so one animation each drives text, backgrounds, borders
+     and the footer's opacity levels from a single interpolated value, in the
+     same frame. Fading the consumers instead put a transition on every element
+     and left them agreeing only by coincidence, which is what let text finish
+     after its background on WebKit (docs/architecture.md, Decisions).
+
+     The contract that keeps that true: a component that transitions a colour
+     of its own must exclude itself while this class is on the root, or its
+     transition chases a value that moves every frame and lands well after the
+     page does. Header, Blog, Experience and Contact each do that with a
+     :global(html:not(.theme-switching)) guard on their hover transitions.
+
+     Longhands rather than the `transition` shorthand: one duration and easing
+     for all eleven reads better than repeating them, and a custom-property
+     name in the shorthand is the more sparsely implemented form. */
   html.theme-switching {
-    transition: background-color var(--theme-fade) ease;
+    transition-property:
+      --bg, --ink, --muted, --line, --hair, --accent, --accent-text,
+      --accent-on-ink, --dot, --on-ink-dim, --on-ink-mid;
+    transition-duration: var(--theme-fade);
+    transition-timing-function: ease;
   }
 }

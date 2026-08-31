@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { hrefOf, sections, titleIdOf } from "../src/lib/nav";
 import {
+  cssTimeToMs,
   THEME_ATTRIBUTE,
   THEME_COLORS,
   THEME_STORAGE_KEY,
@@ -19,6 +20,60 @@ const seedDark = (page: Page) =>
   page.addInitScript(
     (key) => localStorage.setItem(key, "dark"),
     THEME_STORAGE_KEY,
+  );
+
+/* What the theme flip should be animating, read from the stylesheet rather
+   than restated here: every custom property the dark block declares, each for
+   --theme-fade. Deriving it is the point — a hard-coded list can only catch a
+   token dropped from the fade, not a twelfth one added to the palette and
+   forgotten, which is the direction the drift actually goes.
+
+   The selector is matched with its quotes stripped because the build minifies
+   [data-theme="dark"] to [data-theme=dark], and the block is top level in both
+   the dev and the built stylesheet, so a flat walk reaches it. */
+const expectedTokenFade = async (page: Page) => {
+  const { tokens, fade } = await page.evaluate((attribute) => {
+    const declared: string[] = [];
+    for (const sheet of document.styleSheets) {
+      for (const rule of sheet.cssRules) {
+        if (
+          rule instanceof CSSStyleRule &&
+          rule.selectorText.replaceAll('"', "") === `[${attribute}=dark]`
+        ) {
+          for (const property of rule.style) {
+            if (property.startsWith("--")) declared.push(property);
+          }
+        }
+      }
+    }
+    return {
+      tokens: declared,
+      fade: getComputedStyle(document.documentElement).getPropertyValue(
+        "--theme-fade",
+      ),
+    };
+  }, THEME_ATTRIBUTE);
+
+  return Object.fromEntries(tokens.map((token) => [token, cssTimeToMs(fade)]));
+};
+
+/* The CSS transitions the root element is running, as {property: duration}.
+   Only the theme flip animates anything on <html>, so this needs no filtering
+   beyond "is a transition". */
+const rootTransitions = (page: Page) =>
+  page.evaluate(() =>
+    Object.fromEntries(
+      document.documentElement
+        .getAnimations()
+        .filter(
+          (animation): animation is CSSTransition =>
+            animation instanceof CSSTransition,
+        )
+        .map((animation) => [
+          animation.transitionProperty,
+          Number(animation.effect?.getComputedTiming().duration),
+        ]),
+    ),
   );
 
 /* Click the first Experience row open and assert the description really grew.
@@ -111,9 +166,22 @@ test("the theme toggle flips the theme and persists it", async ({ page }) => {
      the DOM at once (CSS picks one), so only the accessible name is meaningful
      — textContent reads "Dark themeLight theme". */
   await page.getByRole("button", { name: "Dark theme" }).click();
+
+  /* The fade runs on the tokens, on the root, and nowhere else — the whole
+     point of registering them (global.css) is that one interpolated value
+     drives every colour, so text can't finish after its background. Read
+     through getAnimations rather than by sampling a frame, which would be a
+     race against the interpolation; this reads the transitions the flip
+     started, not their progress. It is captured first, before any awaited
+     assertion, because ThemeToggle drops .theme-switching 560ms after the
+     click and the animations go with it. */
+  const started = await rootTransitions(page);
+
   await expect(html).toHaveAttribute(THEME_ATTRIBUTE, "dark");
   await expect(themeColor).toHaveAttribute("content", THEME_COLORS.dark);
   await expect(page.getByRole("button", { name: "Light theme" })).toBeVisible();
+
+  expect(started).toEqual(await expectedTokenFade(page));
 
   await page.reload();
   await expect(html).toHaveAttribute(THEME_ATTRIBUTE, "dark");

@@ -59,8 +59,13 @@ import ThemeToggle from "./ThemeToggle.astro";
     gap: 20px;
   }
   /* The slow fade makes the highlight glide between links as scrolling hands
-     one section's ownership of the viewport to the next. */
-  nav a {
+     one section's ownership of the viewport to the next.
+
+     Off during a theme flip: these colours come from --ink/--accent-text, and
+     the flip animates those tokens directly (global.css), so a transition here
+     would chase a value that moves every frame and land ~600ms after the page
+     does. The theme fade owns the colour; this rule owns the highlight. */
+  :global(html:not(.theme-switching)) nav a {
     transition:
       color 700ms ease,
       border-color 700ms ease;
