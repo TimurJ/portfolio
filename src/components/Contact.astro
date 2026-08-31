@@ -46,9 +46,12 @@ const titleId = titleIdOf(sectionId);
        the header's from the screen-filling formula section-screen uses. */
     min-height: calc(100svh - var(--headerH) - var(--footerH));
   }
-  .contact-btn {
-    /* The design's `ease`, which transition-colors' default curve isn't. Only
-       the background moves on hover — the text is pinned white. */
+  /* The design's `ease`, which transition-colors' default curve isn't. Only the
+     background moves on hover — the text is pinned white. Off during a theme
+     flip, which animates the --accent this reads (see global.css); the two
+     accents are near-identical so nothing shows, but the rule is the same one
+     the other components follow. */
+  :global(html:not(.theme-switching)) .contact-btn {
     transition: background-color 220ms ease;
   }
 </style>

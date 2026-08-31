@@ -92,14 +92,19 @@ const posts: BlogEntry[] = [
     font-size: var(--text-body);
     line-height: 1.55;
   }
-  .blog-title,
-  .blog-cta {
+  /* Hover transitions, and hover only: they are off during a theme flip, which
+     animates the --ink/--accent-text tokens these read and would otherwise be
+     chased frame by frame (the contract is stated in global.css). */
+  :global(html:not(.theme-switching)) .blog-title,
+  :global(html:not(.theme-switching)) .blog-cta {
     transition:
       color 200ms ease,
       border-color 200ms ease;
   }
   .blog-arrow {
     margin-top: 16px;
+  }
+  :global(html:not(.theme-switching)) .blog-arrow {
     transition:
       translate 450ms cubic-bezier(0.16, 1, 0.3, 1),
       color 250ms ease;

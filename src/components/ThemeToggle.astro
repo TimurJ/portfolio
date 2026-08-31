@@ -43,19 +43,24 @@ import { iconAttrs } from "../lib/icons";
 
 <script>
   import {
+    cssTimeToMs,
     THEME_ATTRIBUTE,
     THEME_COLORS,
     THEME_STORAGE_KEY,
   } from "../lib/theme";
 
-  /* The --theme-fade transition in global.css applies only while
-     .theme-switching is on the root, so it runs exactly for the flip and
+  /* The --theme-fade transition in global.css — on the theme tokens
+     themselves, which is what keeps every colour on one clock — applies only
+     while .theme-switching is on the root, so it runs exactly for the flip and
      never on hover or load. The removal timeout derives from the same token
-     (plus a settle margin) so it always outlasts the fade. */
+     (plus a settle margin) so it always outlasts the fade. cssTimeToMs, not a
+     bare parseFloat: the build minifies the token to `.5s`, so the unit has to
+     be read rather than assumed — getting that wrong pulls the class 500ms
+     early and cancels the fade it exists to run. */
   const root = document.documentElement;
   const themeColorMeta = document.querySelector('meta[name="theme-color"]');
   const fadeMs =
-    parseFloat(getComputedStyle(root).getPropertyValue("--theme-fade")) || 500;
+    cssTimeToMs(getComputedStyle(root).getPropertyValue("--theme-fade")) || 500;
   let switchTimeout: ReturnType<typeof setTimeout> | undefined;
 
   /* The three things a flip touches, in one place: the attribute the CSS keys
