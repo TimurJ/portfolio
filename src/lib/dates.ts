@@ -13,7 +13,7 @@ const longDate = new Intl.DateTimeFormat("en-GB", {
   timeZone: "UTC",
 });
 
-/** "September 2026" — the homepage row. */
+/** "September 2026" — the homepage row and the post card. */
 export const formatMonthYear = (date: Date): string => monthYear.format(date);
 
 /** "19 September 2026" — the article header. */

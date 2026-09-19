@@ -24,7 +24,13 @@ export const socials = [
   { href: "https://www.linkedin.com/in/timur-jalilov/", label: "LinkedIn" },
 ];
 
-/** Social card served from public/og.jpg — Base's og:image tags. The card is
-    rendered from scripts/og-card.html, whose fixed canvas must match these
-    dimensions; that file names this object as the authority. */
+/** Social card served from public/og.jpg — Base's og:image tags — and the
+    canvas both card renderers draw on: scripts/og-card.html is hand-rendered
+    to these dimensions and names this object as the authority, and lib/og.ts
+    builds each post's card at them. */
 export const ogImage = { src: "/og.jpg", width: 1200, height: 630 };
+
+/** The hosted CV, served verbatim from public/ — Footer's Résumé link. Not in
+    `socials`: Base's JSON-LD reads that list as `sameAs` profiles, and a PDF
+    isn't one. */
+export const cv = "/Timur_Jalilov_CV.pdf";

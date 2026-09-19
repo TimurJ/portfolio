@@ -5,10 +5,11 @@ import { type SectionId, nextOf, titleIdOf } from "../lib/nav";
 import ScrollCue from "./ScrollCue.astro";
 import SectionIntro from "./SectionIntro.astro";
 
-/* The shell every list section shares: intro, an evenly-distributed list of
-   rows, and the closing scroll cue. Intro props are picked off SectionIntro
-   rather than restated, so the two can't drift — except titleId, which the
-   shell derives from the section id rather than asking its consumer for. */
+/* The shell every list section shares: intro, the list of rows, and the
+   closing scroll cue at the foot of the screen. Intro props are picked off
+   SectionIntro rather than restated, so the two can't drift — except titleId,
+   which the shell derives from the section id rather than asking its consumer
+   for. */
 type Props = Pick<
   ComponentProps<typeof SectionIntro>,
   "eyebrow" | "title" | "blurb" | "condensed"

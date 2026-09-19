@@ -1,6 +1,6 @@
 ---
 import { sectionHrefFrom, sections } from "../lib/nav";
-import { email, mailto, socials } from "../lib/site";
+import { cv, email, mailto, socials } from "../lib/site";
 
 const year = new Date().getFullYear();
 
@@ -55,12 +55,8 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
             </a>
           ))
         }
-        {
-          /* No CV hosted yet — becomes a link like the two above once it is.
-            No ↗ until then: the arrow means "leaves the page", and this one
-            goes nowhere (same reasoning as Blog's non-link "Read article"). */
-        }
-        <span>Résumé</span>
+        {/* A PDF leaves the page, so it carries ↗ like the two above. */}
+        <a href={cv} class={footerLinkClass}>Résumé ↗</a>
       </div>
       <div class="flex flex-col gap-3.5">
         <span class={footerLabelClass}>Based in</span>
@@ -71,15 +67,16 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
     <div
       class="footer-legal flex flex-wrap justify-between opacity-(--on-ink-dim)"
     >
+      {
+        /* .legal-extra is dropped on the narrowest phones — see <style> below. */
+      }
       <span>
-        <span class="legal-long">
-          © {year} Timur Jalilov. All rights reserved.
-        </span>
-        <span class="legal-short">© {year} Timur Jalilov</span>
+        © {year} Timur Jalilov<span class="legal-extra"
+          >. All rights reserved.</span
+        >
       </span>
-      <span>
-        <span class="legal-long">Designed and built in London</span>
-        <span class="legal-short">Built in London</span>
+      <span class="legal-built">
+        <span class="legal-extra">Designed and </span>built in London
       </span>
     </div>
   </div>
@@ -115,9 +112,6 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
     gap: 16px;
     margin-top: clamp(28px, 4vh, 48px);
     font-size: 12px;
-  }
-  .legal-short {
-    display: none;
   }
 
   /* Laptop: three-column footer, viewport-scaled email. */
@@ -160,17 +154,20 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
     }
   }
 
-  /* Narrowest phones: short-form legal strings. */
+  /* Narrowest phones: short-form legal strings — "© 2026 Timur Jalilov" and
+     "Built in London". The dropped words are a span, and the capital comes
+     from ::first-letter: the wrapper is a flex item, so a block container,
+     and a display: none first child contributes no letter. */
   @media (width < 410px) {
     .footer-legal {
       gap: 10px;
       font-size: 10.5px;
     }
-    .legal-long {
+    .legal-extra {
       display: none;
     }
-    .legal-short {
-      display: inline;
+    .legal-built::first-letter {
+      text-transform: uppercase;
     }
   }
 </style>
