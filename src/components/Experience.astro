@@ -16,9 +16,9 @@ const experiences: ExperienceEntry[] = [
   {
     title: "Senior Frontend Engineer",
     company: "Onyx Capital Group",
-    meta: ["2026 — Present", "London, UK"],
+    meta: ["Jan 2026 — Present", "London, UK"],
     description:
-      "Own the frontend of an energy-commodities trading platform. I made the case to the CTO for a greenfield rebuild over an in-place upgrade, secured board approval, and built the architecture and core trading surface solo: order entry, price ladder, blotters, market overview and real-time charting. The team behind it went from one engineer to four, and I lead it.",
+      "Own the frontend of an energy-commodities trading platform. I made the case to the CTO for a greenfield rebuild over an in-place upgrade, secured board approval, and built the architecture and core trading surface solo: order entry, price ladder, blotters, market overview and real-time charting. Flux 4.0 shipped to the whole floor four months after sign-off and serves 800+ products and 200+ external clients. The team behind it went from one engineer to four, and I lead it.",
     pills: [
       "React",
       "TypeScript",
@@ -35,12 +35,26 @@ const experiences: ExperienceEntry[] = [
     ],
   },
   {
+    title: "Coaching & Parental Leave",
+    company: "Self-employed",
+    meta: ["Nov 2024 — Dec 2025", "London, UK"],
+    description:
+      "Took parental leave after the birth of my twin daughters. Alongside it I founded and ran a private course teaching frontend engineers how to break into fintech: designed the curriculum and built the materials on React, TypeScript and real-time trading UIs. Wound it down after six months when the economics didn't work, and returned to the market.",
+    pills: [
+      "React",
+      "TypeScript",
+      "Real-time UIs",
+      "Curriculum design",
+      "Teaching",
+    ],
+  },
+  {
     title: "Frontend Engineer",
     company: "Adaptive Financial Consulting",
     subtitle: "(Contracted to CME Group)",
-    meta: ["2021 — 2025", "London, UK"],
+    meta: ["Sep 2021 — Oct 2024", "London, UK"],
     description:
-      "Contracted to CME Group for the full engagement, building BrokerTec Quote, a multi-dealer RFQ platform for government bonds and repo. Built the real-time negotiation workflows, pricing grids and trade blotters, with live updates over WebSocket, and partnered with backend teams on API design for latency and fault tolerance. Supported live releases in a high-stakes trading environment, triaging issues in real time with the client.",
+      "Contracted to CME Group for the full engagement, building BrokerTec Quote, a multi-dealer RFQ platform for government bond repo. Built the real-time negotiation workflows, pricing grids and trade blotters, with live updates over WebSocket, and partnered with backend teams on API design for latency and fault tolerance. Supported live releases in a high-stakes trading environment, triaging issues in real time with the client.",
     pills: [
       "React",
       "TypeScript",
@@ -86,7 +100,7 @@ const companyId = (index: number) => `exp-${index}-company`;
   id="experience"
   eyebrow="Experience"
   title="Explore My Engineering Journey"
-  blurb="Five years building trading systems, from a multi-dealer RFQ platform for government bonds and repo at CME Group to a greenfield energy-commodities terminal I now own end to end."
+  blurb="Five years building trading systems, from a multi-dealer RFQ platform for government bond repo at CME Group to a greenfield energy-commodities terminal I now own end to end."
 >
   {
     experiences.map(

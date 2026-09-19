@@ -8,13 +8,10 @@ import Header from "../../components/Header.astro";
 import Base from "../../layouts/Base.astro";
 import { formatLongDate, isoDate } from "../../lib/dates";
 import { homeHrefOf } from "../../lib/nav";
-import { getPosts, readingTimeOf } from "../../lib/posts";
+import { postOgHref, postPaths, readingTimeOf } from "../../lib/posts";
 import { name } from "../../lib/site";
 
-export const getStaticPaths = (async () => {
-  const posts = await getPosts();
-  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
-}) satisfies GetStaticPaths;
+export const getStaticPaths = postPaths satisfies GetStaticPaths;
 
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
@@ -27,7 +24,11 @@ const minutes = readingTimeOf(post);
 <Base
   title={`${title} — ${name}`}
   description={description}
-  article={{ headline: title, publishedTime: pubDate }}
+  article={{
+    headline: title,
+    publishedTime: pubDate,
+    image: postOgHref(post),
+  }}
 >
   <Header />
   {/* id: Header's skip link targets it — the same contract as index.astro. */}

@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 import { homeHrefOf, hrefOf, sections, titleIdOf } from "../src/lib/nav";
+import { cv, ogImage } from "../src/lib/site";
 import {
   cssTimeToMs,
   THEME_ATTRIBUTE,
@@ -440,6 +441,19 @@ test("the 404 page is reachable, noindex, and clean", async ({ page }) => {
   ).toEqual([]);
 });
 
+test("the footer's Résumé link serves the hosted CV", async ({ page }) => {
+  await page.goto("/");
+  const link = page
+    .getByRole("contentinfo")
+    .getByRole("link", { name: /Résumé/ });
+  await expect(link).toHaveAttribute("href", cv);
+  /* Resolved against baseURL, so this is the file astro preview serves out
+     of dist/ — a renamed or dropped PDF fails here, not on the live site. */
+  const response = await page.request.get(cv);
+  expect(response.status()).toBe(200);
+  expect(response.headers()["content-type"]).toContain("application/pdf");
+});
+
 /* The first article's URL, read off the home page rather than imported: the
    collection lives behind astro:content, which node can't resolve here. Any
    post will do — the cases below assert the page's shape, not its content. */
@@ -503,6 +517,34 @@ test.describe("blog", () => {
     }
     await expect(nav.locator("a[aria-current]")).toHaveCount(0);
     expect(errors).toEqual([]);
+  });
+
+  test("an article's social card is its own, built, and the size it claims", async ({
+    page,
+  }) => {
+    const href = await firstArticleHref(page);
+    await page.goto(href);
+    const card = `${href}og.png`;
+
+    /* The card lives beside the page and is named by the title, not the site. */
+    const image = await page
+      .locator('meta[property="og:image"]')
+      .getAttribute("content");
+    expect(image && new URL(image).pathname).toBe(card);
+    await expect(page.locator('meta[property="og:image:alt"]')).toHaveAttribute(
+      "content",
+      await page.getByRole("heading", { level: 1 }).innerText(),
+    );
+
+    /* Built, not just advertised: fetch it and read the PNG's IHDR (the
+       width and height at bytes 16–24) against `ogImage`, the one source the
+       og:image:width/height metas are printed from. */
+    const response = await page.request.get(card);
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toBe("image/png");
+    const png = await response.body();
+    expect(png.readUInt32BE(16)).toBe(ogImage.width);
+    expect(png.readUInt32BE(20)).toBe(ogImage.height);
   });
 
   for (const theme of ["light", "dark"] as const) {

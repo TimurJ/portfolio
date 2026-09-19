@@ -38,8 +38,10 @@
   color-scheme: light;
   color-scheme: light only;
   /* Both --bg values are mirrored by THEME_COLORS in lib/theme.ts, which feeds
-     the theme-color meta (a <meta content> can't read a custom property).
-     Change them together. */
+     the theme-color meta (a <meta content> can't read a custom property). The
+     social-card renderers restate more, because neither can read a stylesheet:
+     scripts/og-card.html the light --bg/--ink/--muted/--accent, lib/og.ts the
+     dark --ink/--muted/--accent/--accent-text. Change them together. */
   --bg: #ffffff;
   --ink: #1c1c1c;
   --muted: #6a6a6a;
@@ -217,13 +219,14 @@
   min-height: calc(100svh - var(--headerH));
 }
 
-/* A section's evenly-distributed content list, inset by the shared gutter.
-   Stretches inside the flex column its consumer's section shell provides. */
+/* A section's content list, inset by the shared gutter. Stretches inside the
+   flex column its consumer's section shell provides, so any height the rows
+   don't fill sits below them, above the cue — not spread around them, which
+   floated a single row mid-screen. */
 @utility section-list {
   display: flex;
   flex: 1;
   flex-direction: column;
-  justify-content: space-evenly;
   padding-inline: var(--gutter);
 }
 
