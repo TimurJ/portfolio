@@ -13,6 +13,12 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "chore"
+    # @types/node tracks the runtime, and the runtime is pinned to 24 LTS
+    # (.nvmrc, engines). Majors follow a Node bump, never lead one; minors and
+    # patches within 24.x still flow through the development group.
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     groups:
       production-dependencies:
         dependency-type: "production"
