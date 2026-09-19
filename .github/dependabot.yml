@@ -19,6 +19,13 @@ updates:
     ignore:
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # prettier-plugin-astro 1.x is a rewrite on @astrojs/compiler-rs and emits
+      # a JSX AST; prettier-plugin-tailwindcss's Astro transform matches nothing
+      # against it, so class sorting silently stops in every .astro file — no
+      # error, and format:check still passes. Lift once
+      # tailwindlabs/prettier-plugin-tailwindcss#473 ships in a release.
+      - dependency-name: "prettier-plugin-astro"
+        update-types: ["version-update:semver-major"]
     groups:
       production-dependencies:
         dependency-type: "production"
