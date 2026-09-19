@@ -1,7 +1,12 @@
 ---
-import { hrefOf, sections } from "../lib/nav";
+import { sectionHrefFrom, sections } from "../lib/nav";
 import ContactCta from "./ContactCta.astro";
 import ThemeToggle from "./ThemeToggle.astro";
+
+/* In-page hashes on the home page, where the scroll-spy below keys off
+   `a[href^="#"]`; home-first anywhere else, where the spy, matching nothing,
+   highlights nothing. */
+const linkTo = sectionHrefFrom(Astro.url.pathname);
 ---
 
 {
@@ -17,7 +22,7 @@ import ThemeToggle from "./ThemeToggle.astro";
   <nav aria-label="Main" class="flex flex-wrap items-center">
     {
       sections.map(({ id, label }) => (
-        <a href={hrefOf(id)} class="border-b border-transparent pb-0.5">
+        <a href={linkTo(id)} class="border-b border-transparent pb-0.5">
           {label}
         </a>
       ))

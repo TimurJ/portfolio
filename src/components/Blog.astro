@@ -1,38 +1,15 @@
 ---
+import { formatMonthYear, isoDate } from "../lib/dates";
 import { iconAttrs } from "../lib/icons";
+import { getPosts, postHref, readingTimeOf } from "../lib/posts";
 import DotLabel from "./DotLabel.astro";
 import Section from "./Section.astro";
 
-type BlogEntry = {
-  date: string;
-  readTime: string;
-  title: string;
-  excerpt: string;
-};
-
-const posts: BlogEntry[] = [
-  {
-    date: "June 2026",
-    readTime: "7 min read",
-    title: "Rendering a live order book without dropping frames",
-    excerpt:
-      "What actually costs you a frame when prices update forty times a second, and why virtualisation is the last optimisation to reach for rather than the first.",
-  },
-  {
-    date: "March 2026",
-    readTime: "11 min read",
-    title: "Design systems that survive a trading desk",
-    excerpt:
-      "Colour rules for profit and loss, density that traders will accept, and the governance needed to keep one component library serving six teams.",
-  },
-  {
-    date: "November 2025",
-    readTime: "9 min read",
-    title: "WebSockets, reconnects and the state you forgot to reconcile",
-    excerpt:
-      "A pattern for streaming market data that keeps the client honest after a dropped connection, and the tests that prove it.",
-  },
-];
+/* The one section whose content is a collection rather than a typed const:
+   the same list feeds the article route, so a card and its page can't drift. */
+const posts = await getPosts();
+/* The row is one link, named by its title alone — see aria-labelledby. */
+const titleId = (id: string) => `blog-${id}-title`;
 ---
 
 <Section
@@ -42,18 +19,29 @@ const posts: BlogEntry[] = [
   blurb="These are the findings I’ve collected building frontends in finance: trading screens, market data, design systems. I write them up as I go so the insights are useful to someone other than me."
 >
   {
-    posts.map(({ date, readTime, title, excerpt }) => (
-      <article class="blog-row grid items-start border-b border-hair">
+    posts.map((post) => (
+      <a
+        href={postHref(post)}
+        aria-labelledby={titleId(post.id)}
+        class="blog-row grid items-start border-b border-hair"
+      >
         <div class="blog-meta text-muted">
-          <DotLabel>{date}</DotLabel>
-          <span>{readTime}</span>
+          <DotLabel>
+            <time datetime={isoDate(post.data.pubDate)}>
+              {formatMonthYear(post.data.pubDate)}
+            </time>
+          </DotLabel>
+          <span>{readingTimeOf(post)} min read</span>
         </div>
         <div class="flex min-w-0 flex-col gap-3">
-          <h3 class="blog-title leading-[1.15] font-normal tracking-[-0.02em]">
-            {title}
+          <h3
+            id={titleId(post.id)}
+            class="blog-title leading-[1.15] font-normal tracking-[-0.02em]"
+          >
+            {post.data.title}
           </h3>
           <p class="blog-excerpt max-w-[62ch] text-pretty text-muted">
-            {excerpt}
+            {post.data.description}
           </p>
           <span class="blog-cta self-start border-b border-accent-text/40 pb-0.5 text-meta text-accent-text">
             Read article
@@ -63,7 +51,7 @@ const posts: BlogEntry[] = [
           <path d="M7 17 17 7" />
           <path d="M8 7h9v9" />
         </svg>
-      </article>
+      </a>
     ))
   }
 </Section>

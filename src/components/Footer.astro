@@ -1,11 +1,12 @@
 ---
-import { hrefOf, sections } from "../lib/nav";
+import { sectionHrefFrom, sections } from "../lib/nav";
 import { email, mailto, socials } from "../lib/site";
 
 const year = new Date().getFullYear();
 
 /* The footer doesn't link to the section it closes the page with. */
 const footerNav = sections.filter(({ id }) => id !== "contact");
+const linkTo = sectionHrefFrom(Astro.url.pathname);
 
 const footerLinkClass = "text-bg hover:text-accent-on-ink";
 const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
@@ -33,7 +34,7 @@ const footerLabelClass = "footer-label uppercase opacity-(--on-ink-dim)";
         <span id="footer-nav-label" class={footerLabelClass}>Navigate</span>
         {
           footerNav.map(({ id, label }) => (
-            <a href={hrefOf(id)} class={footerLinkClass}>
+            <a href={linkTo(id)} class={footerLinkClass}>
               {label}
             </a>
           ))

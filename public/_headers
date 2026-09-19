@@ -28,7 +28,9 @@
 # and then switches it off — no gain on a static site with no user input, no
 # third-party scripts and no cookies. (Styles are not the obstacle: the
 # component stylesheets are external /_astro/*.css links, and the only inline
-# <style> is the Fonts API @font-face block.) Revisit if any of those three
+# <style> is the Fonts API @font-face block — though the article pages' code
+# blocks carry Shiki's colours as inline style attributes on every token span,
+# so a future policy would need style-src-attr.) Revisit if any of those
 # change; a CSP with frame-ancestors would then supersede the X-Frame-Options
 # line below.
 /*
