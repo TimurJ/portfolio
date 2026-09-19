@@ -4,6 +4,7 @@ import DotLabel from "./DotLabel.astro";
 import Section from "./Section.astro";
 
 type ExperienceEntry = {
+  title: string;
   company: string;
   subtitle?: string;
   meta: string[];
@@ -13,6 +14,7 @@ type ExperienceEntry = {
 
 const experiences: ExperienceEntry[] = [
   {
+    title: "Senior Frontend Engineer",
     company: "Onyx Capital Group",
     meta: ["2026 — Present", "London, UK"],
     description:
@@ -33,6 +35,7 @@ const experiences: ExperienceEntry[] = [
     ],
   },
   {
+    title: "Frontend Engineer",
     company: "Adaptive Financial Consulting",
     subtitle: "(Contracted to CME Group)",
     meta: ["2021 — 2025", "London, UK"],
@@ -55,26 +58,27 @@ const experiences: ExperienceEntry[] = [
   },
 ];
 
-const nameClass = "exp-name leading-[1.1] font-normal tracking-[-0.02em]";
-
 /* Ties each row's read-more button to the paragraph it expands, and to the
-   company heading that says which row it belongs to. Both rows would otherwise
-   be an identical bare "Read more" in a screen reader's button list, with
-   nothing connecting aria-expanded to what it governs.
+   title and company that say which row it belongs to. Both rows would
+   otherwise be an identical bare "Read more" in a screen reader's button list,
+   with nothing connecting aria-expanded to what it governs.
 
-   The company goes on aria-describedby rather than aria-label: the button's
+   Title and company go on aria-describedby rather than aria-label: the button's
    name has to stay the visible "Read more"/"Show less" (the labels swap by
    display, so only the shown one is in the accessible name), and an aria-label
    would freeze it at one state and break voice control's match on the other.
+   Both are named because either alone can repeat across rows — the same title
+   at two employers, or two roles at one employer (a second Onyx row is
+   planned) — and only the pair is unique.
 
-   Keyed by row index, not by a slug of the company: two rows at the same
-   employer (two roles, which the `subtitle` field already anticipates) would
+   Keyed by row index, not by a slug of the company: those two-roles rows would
    share a slug, and row two's aria-controls would then resolve to row one's
    paragraph — silently, since axe's only live duplicate-id rule is
    `duplicate-id-aria`, which is reviewOnFail and so reports as `incomplete`
    rather than a violation the suite asserts on. */
 const descriptionId = (index: number) => `exp-${index}-desc`;
-const headingId = (index: number) => `exp-${index}-name`;
+const headingId = (index: number) => `exp-${index}-title`;
+const companyId = (index: number) => `exp-${index}-company`;
 ---
 
 <Section
@@ -86,13 +90,21 @@ const headingId = (index: number) => `exp-${index}-name`;
 >
   {
     experiences.map(
-      ({ company, subtitle, meta, description, pills }, index) => (
+      ({ title, company, subtitle, meta, description, pills }, index) => (
         <article class="exp-row grid items-start border-b border-hair">
           <div class="exp-head flex flex-col">
-            <h3 id={headingId(index)} class={nameClass}>
-              {company}
+            <h3
+              id={headingId(index)}
+              class="exp-title leading-[1.1] font-normal tracking-[-0.02em]"
+            >
+              {title}
             </h3>
-            {subtitle && <span class={nameClass}>{subtitle}</span>}
+            <p
+              id={companyId(index)}
+              class="exp-company leading-[1.2] tracking-[-0.01em]"
+            >
+              {company} {subtitle && <span class="block">{subtitle}</span>}
+            </p>
             <div class="exp-meta">
               {meta.map((item) => (
                 <DotLabel class="text-muted">{item}</DotLabel>
@@ -110,7 +122,7 @@ const headingId = (index: number) => `exp-${index}-name`;
               type="button"
               aria-expanded="false"
               aria-controls={descriptionId(index)}
-              aria-describedby={headingId(index)}
+              aria-describedby={`${headingId(index)} ${companyId(index)}`}
               class="read-more my-2.5 cursor-pointer items-center gap-[7px] self-start border-b border-accent-text/40 pb-0.5 text-meta tracking-[0.02em] text-accent-text hover:border-accent-text"
             >
               <span class="label-more">Read more</span>
@@ -149,13 +161,17 @@ const headingId = (index: number) => `exp-${index}-name`;
      inheritance. The wrapper generates no box (display: contents), so they
      stay direct flex items of .exp-head and its gap still spaces them —
      sizing them here rather than on .exp-head keeps the meta and the
-     .exp-name headings independent. */
+     title/company lines independent. */
   .exp-meta {
     display: contents;
     font-size: var(--text-meta);
   }
-  .exp-name {
+  /* Three tiers of type in the head column: title, then company, then meta. */
+  .exp-title {
     font-size: clamp(20px, 2vw, 30px);
+  }
+  .exp-company {
+    font-size: clamp(15px, 1.2vw, 18px);
   }
   .exp-desc {
     font-size: var(--text-body);
@@ -201,8 +217,11 @@ const headingId = (index: number) => `exp-${index}-name`;
       padding: 16px 0;
       gap: 12px 20px;
     }
-    .exp-name {
+    .exp-title {
       font-size: 21px;
+    }
+    .exp-company {
+      font-size: 15px;
     }
     .exp-meta {
       font-size: 12.5px;
@@ -239,8 +258,11 @@ const headingId = (index: number) => `exp-${index}-name`;
       gap: 10px;
       padding: 14px 0;
     }
-    .exp-name {
+    .exp-title {
       font-size: 19px;
+    }
+    .exp-company {
+      font-size: 14px;
     }
     .exp-desc {
       font-size: 13px;
@@ -301,7 +323,7 @@ const headingId = (index: number) => `exp-${index}-name`;
     .exp-head {
       gap: 4px;
     }
-    .exp-name {
+    .exp-title {
       font-size: 18px;
     }
     .pill {

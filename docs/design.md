@@ -34,3 +34,4 @@ Tokens are exposed as Tailwind utilities via `@theme inline` (`bg-bg`, `text-ink
 
 - Archivo (400), self-hosted via Astro's Fonts API (`--font-archivo`, preloaded); stack falls back to `system-ui, sans-serif`.
 - Display headings use **weight 400** with tight tracking (−0.02em to −0.04em) and line-height ≈ 0.88–1.15; the design's sizes are fluid `clamp()` values per section.
+- The Experience rows carry a role title the design's rows do not have — **added**. The design leads each row with the company at `clamp(20px, 2vw, 30px)`; here that scale goes to the title, and the company drops to a new `clamp(15px, 1.2vw, 18px)` step (15px / 14px on the laptop / phone tiers) between it and the 13px meta. The reasoning is in the decision record in [architecture.md](architecture.md).
