@@ -18,6 +18,18 @@ export type SectionTitleId = `${SectionId}-title`;
 
 export const hrefOf = (id: SectionId): SectionHref => `#${id}`;
 
+/** The same section from any page but the home page, where a bare hash would
+    be dead: the link goes home first. `SectionHref` stays the in-page form —
+    ScrollCue and Header's scroll-spy (`a[href^="#"]`) both rely on it. */
+export type HomeSectionHref = `/${SectionHref}`;
+export const homeHrefOf = (id: SectionId): HomeSectionHref => `/${hrefOf(id)}`;
+
+/** Which form a page's section links take: in-page hashes on the home page,
+    home-first everywhere else. The pathname test lives here so Header and
+    Footer can't disagree about what counts as home. */
+export const sectionHrefFrom = (pathname: string) =>
+  pathname === "/" ? hrefOf : homeHrefOf;
+
 /** A section's scroll-cue target: the next entry in the shared order.
     undefined for the last section, which has nothing to cue on to. */
 export const nextOf = (id: SectionId): SectionHref | undefined => {

@@ -8,6 +8,9 @@
 /* docs/ is prose that names utilities (design.md's token table) — keep the
    content scanner out of it so documentation can't ship dead CSS. */
 @source not "../../docs";
+/* src/content is prose too: a post that says "grid" or "block" would
+   otherwise emit that utility, referenced by nothing on the page. */
+@source not "../content";
 
 /* Tailwind dark: utilities follow the data-theme toggle, not the OS setting */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
@@ -315,6 +318,12 @@
      transition chases a value that moves every frame and lands well after the
      page does. Header, Blog, Experience and Contact each do that with a
      :global(html:not(.theme-switching)) guard on their hover transitions.
+
+     The inverse case is the article page's code blocks: Shiki's colours are
+     fixed inline values outside these eleven tokens, so they would snap while
+     everything else eases. pages/blog/[slug].astro transitions them for
+     exactly this class — safe for the same reason the guard exists, because
+     their target does not move.
 
      Longhands rather than the `transition` shorthand: one duration and easing
      for all eleven reads better than repeating them, and a custom-property

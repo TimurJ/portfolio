@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
-import { hrefOf, sections, titleIdOf } from "../src/lib/nav";
+import { homeHrefOf, hrefOf, sections, titleIdOf } from "../src/lib/nav";
 import {
   cssTimeToMs,
   THEME_ATTRIBUTE,
@@ -21,6 +21,17 @@ const seedDark = (page: Page) =>
     (key) => localStorage.setItem(key, "dark"),
     THEME_STORAGE_KEY,
   );
+
+/* Attached before goto, or the scripts have already run by the time we
+   listen. */
+const collectErrors = (page: Page): string[] => {
+  const errors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  page.on("pageerror", (error) => errors.push(error.message));
+  return errors;
+};
 
 /* What the theme flip should be animating, read from the stylesheet rather
    than restated here: every custom property the dark block declares, each for
@@ -112,14 +123,7 @@ const expectRowExpands = async (page: Page) => {
 };
 
 test("loads with no console errors", async ({ page }) => {
-  /* Attached before goto, or the scripts have already run by the time we
-     listen. */
-  const errors: string[] = [];
-  page.on("console", (message) => {
-    if (message.type() === "error") errors.push(message.text());
-  });
-  page.on("pageerror", (error) => errors.push(error.message));
-
+  const errors = collectErrors(page);
   await page.goto("/");
 
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -405,11 +409,7 @@ for (const theme of ["light", "dark"] as const) {
 }
 
 test("the 404 page is reachable, noindex, and clean", async ({ page }) => {
-  const errors: string[] = [];
-  page.on("console", (message) => {
-    if (message.type() === "error") errors.push(message.text());
-  });
-  page.on("pageerror", (error) => errors.push(error.message));
+  const errors = collectErrors(page);
 
   /* The Worker serves dist/404.html for any unmatched path
      (not_found_handling: "404-page"), and astro preview serves the same file,
@@ -438,4 +438,107 @@ test("the 404 page is reachable, noindex, and clean", async ({ page }) => {
   expect(
     errors.filter((message) => !message.includes("status of 404")),
   ).toEqual([]);
+});
+
+/* The first article's URL, read off the home page rather than imported: the
+   collection lives behind astro:content, which node can't resolve here. Any
+   post will do — the cases below assert the page's shape, not its content. */
+const firstArticleHref = async (page: Page) => {
+  await page.goto("/");
+  const href = await page
+    .locator("#blog a.blog-row")
+    .first()
+    .getAttribute("href");
+  if (!href) throw new Error("no article row on the home page");
+  return href;
+};
+
+test.describe("blog", () => {
+  test("home rows are links to article pages, named by their title", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const rows = page.locator("#blog a.blog-row");
+    await expect(rows).not.toHaveCount(0);
+    for (const row of await rows.all()) {
+      /* Trailing slash: the URL as built and served, so no redirect hop. */
+      await expect(row).toHaveAttribute("href", /^\/blog\/[a-z0-9-]+\/$/);
+      /* aria-labelledby names the row by its title alone, not the whole card. */
+      await expect(row).toHaveAccessibleName(
+        await row.locator("h3").innerText(),
+      );
+    }
+  });
+
+  test("an article page answers with its own head and a home-first nav", async ({
+    page,
+  }) => {
+    const errors = collectErrors(page);
+    const href = await firstArticleHref(page);
+    const response = await page.goto(href);
+    expect(response?.status()).toBe(200);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+
+    /* Base builds the canonical from `site`, so under preview only the path
+       can agree with the served URL. */
+    const canonical = await page
+      .locator('link[rel="canonical"]')
+      .getAttribute("href");
+    expect(canonical && new URL(canonical).pathname).toBe(
+      new URL(page.url()).pathname,
+    );
+    await expect(page.locator('meta[property="og:type"]')).toHaveAttribute(
+      "content",
+      "article",
+    );
+    await expect(
+      page.locator('meta[property="article:published_time"]'),
+    ).toHaveCount(1);
+
+    /* Off the home page a bare #hash is dead, so every nav link goes home
+       first — and the scroll-spy, matching none of them, highlights none. */
+    const nav = page.getByRole("navigation", { name: "Main" });
+    for (const { id } of sections) {
+      await expect(nav.locator(`a[href="${homeHrefOf(id)}"]`)).toHaveCount(1);
+    }
+    await expect(nav.locator("a[aria-current]")).toHaveCount(0);
+    expect(errors).toEqual([]);
+  });
+
+  for (const theme of ["light", "dark"] as const) {
+    test(`an article has no accessibility violations in ${theme} mode`, async ({
+      page,
+    }) => {
+      /* Seeded before the first goto, so both navigations paint dark. */
+      if (theme === "dark") await seedDark(page);
+      await page.goto(await firstArticleHref(page));
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+      const results = await new AxeBuilder({ page }).analyze();
+      expect(results.violations).toEqual([]);
+    });
+  }
+
+  test.describe("on a phone viewport", () => {
+    /* The article collapses to one column below 900px and steps its type down
+       below 700px; the desktop scan never sees either. */
+    test.use({ viewport: { width: 390, height: 844 } });
+
+    test("an article has no accessibility violations", async ({ page }) => {
+      await page.goto(await firstArticleHref(page));
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+      const results = await new AxeBuilder({ page }).analyze();
+      expect(results.violations).toEqual([]);
+    });
+  });
+
+  test("/blog lands on the blog section", async ({ page }) => {
+    /* Astro's static redirect is a meta-refresh shell, which preview serves
+       for /blog as it would any directory index. Not axe-scanned: the shell
+       has no <html lang>, and nobody is meant to see it. */
+    await page.goto("/blog");
+    await page.waitForURL(/\/#blog$/);
+    await expect(page.locator("section#blog")).toBeVisible();
+  });
 });

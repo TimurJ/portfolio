@@ -1,6 +1,6 @@
 {
   "name": "portfolio",
-  "description": "Personal portfolio — a static one-page site built with Astro and Tailwind CSS",
+  "description": "Personal portfolio — a static site, one page and a blog, built with Astro and Tailwind CSS",
   "type": "module",
   "version": "0.0.1",
   "private": true,
@@ -30,8 +30,9 @@
     "typecheck": "astro check",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test:unit": "node --test src/lib/readingTime.test.ts src/lib/dates.test.ts",
     "test:e2e": "playwright test",
-    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm build && pnpm test:e2e",
+    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test:unit && pnpm build && pnpm test:e2e",
     "deploy": "astro build && wrangler deploy"
   },
   "dependencies": {
